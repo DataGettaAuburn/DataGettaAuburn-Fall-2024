@@ -1,0 +1,2 @@
+0 2 * * 1,3 cd /home/datagetta_servers/project/Auburn_DataGetta && ./cron-script.sh >> ../../../../var/log/cron_logs.log 2>&1
+0 3 * * * cd /home/datagetta_servers/project/Auburn_DataGetta && date +%c && git reset --hard origin/main >> ../../../../var/log/git_logs.log 2>&1
