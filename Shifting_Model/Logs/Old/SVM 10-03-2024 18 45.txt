@@ -1,0 +1,60 @@
+Model Type: SVM
+
+Training Size = 42213
+Testing Size = 14072
+
+Training Accuracy = 0.31333949257337784
+Testing Accuracy = 0.32227117680500283
+
+Training Average Error = 0.9562220169142207
+Testing Average Error = 0.9404491188175099
+
+Training Recall = [0.0, 0.8033190480532506, 0.0, 0.5206884356949193, 0.0]
+Testing Recall = [0.0, 0.8188306340927807, 0.0, 0.5387018396390142, 0.0]
+
+Training f1 (micro, macro, weighted) = [0.31333949257337784, 0.16828958750340162, 0.43098074084009164]
+Testing f1 (micro, macro, weighted) = [0.32227117680500283, 0.17354902523824683, 0.44205483936829404]
+
+Training auc (macro, weighted) = Error
+Testing auc (macro, weighted) = Error
+
+Hyper-Parameters: 
+
+Regularization Constant: 1
+Kernel Type: linear
+Kernel Degree1
+Kernel Coefficient (gamma): scale
+Independent Term in Kernel (coef0): 0.0
+
+Accuracy Score for Predicting on Training Data: 0.3133
+Accuracy Score for Predicting on Test Data: 0.3223
+
+Overall Average Probabilities
+-------------------------------------
+Section 1: 16.61%
+Section 2: 26.53%
+Section 3: 25.04%
+Section 4: 20.27%
+Section 5: 11.55%
+
+Field Slice Counts for Training Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		7295		28007.0
+2		10967		14206.0
+3		10348		nan
+4		8483		nan
+5		5120		nan
+Amount Correct: 13227
+Amount Incorrect: 28986
+
+Field Slice Counts for Testing Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		2513		9367.0
+2		3643		4705.0
+3		3427		nan
+4		2881		nan
+5		1608		nan
+Amount Correct: 4535
+Amount Incorrect: 9537

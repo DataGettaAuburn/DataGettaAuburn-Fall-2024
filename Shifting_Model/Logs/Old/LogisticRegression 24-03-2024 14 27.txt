@@ -1,0 +1,57 @@
+Model Type: LogisticRegression
+
+Training Size = 41841
+Testing Size = 13947
+
+Training Accuracy = 0.3299634329963433
+Testing Accuracy = 0.3292464329246433
+
+Training Average Error = 0.9535622953562295
+Testing Average Error = 0.9455079945507995
+
+Training Recall = [0.19507186858316222, 0.653704045815629, 0.08809407153356198, 0.4778417773598213, 0.06802721088435375]
+Testing Recall = [0.17997517583781547, 0.6521022258862325, 0.09246874091305612, 0.49026676279740444, 0.0631704410011919]
+
+Training f1 (micro, macro, weighted) = [0.3299634329963433, 0.2660024389293262, 0.3767695120507033]
+Testing f1 (micro, macro, weighted) = [0.3292464329246433, 0.26333967831087757, 0.3773941506438234]
+
+Training auc (macro, weighted) = [0.9727320011979572, 0.9575033876421767]
+Testing auc (macro, weighted) = [0.9738542319150323, 0.9601441784925581]
+
+Hyper-Parameters: 
+
+Learning Rate: 0.8
+Epochs: 100
+
+Accuracy Score for Predicting on Training Data: 0.3300
+Accuracy Score for Predicting on Test Data: 0.3292
+
+Overall Average Probabilities
+-------------------------------------
+Section 1: 17.34%
+Section 2: 25.88%
+Section 3: 24.44%
+Section 4: 20.39%
+Section 5: 11.96%
+
+Field Slice Counts for Training Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		7305		3762
+2		10826		21531
+3		10205		2909
+4		8507		12738
+5		4998		901
+Amount Correct: 13806
+Amount Incorrect: 28035
+
+Field Slice Counts for Testing Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		2417		1178
+2		3639		7237
+3		3439		984
+4		2774		4269
+5		1678		279
+Amount Correct: 4592
+Amount Incorrect: 9355

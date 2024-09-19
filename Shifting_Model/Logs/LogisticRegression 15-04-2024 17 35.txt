@@ -1,0 +1,77 @@
+Model Type: LogisticRegression
+
+Training Size = 50699
+Testing Size = 16900
+
+Training Accuracy = 0.11982484861634352
+Testing Accuracy = 0.11532544378698224
+
+Training Average Error = 3.6970157202311684
+Testing Average Error = 3.743076923076923
+
+Training Recall = [0.00037678975131876413, 0.0011682242990654205, 0.0, 0.0, 0.11211129296235679, 0.29657548998492356, 0.05023414218816517, 0.4604938271604938, 0.12436289500509684, 0.05396678966789668, 0.08097367113760556, 0.11924641404410191, 0.07360265633646929, 0.00425273390036452, 0.018292682926829267]
+Testing Recall = [0.0, 0.0, 0.0, 0.0, 0.10289115646258504, 0.31982543640897754, 0.04805793285055958, 0.438652256834075, 0.12439807383627609, 0.04986522911051213, 0.07556497175141243, 0.10643889618922471, 0.06013179571663921, 0.0035211267605633804, 0.018779342723004695]
+
+Training f1 (micro, macro, weighted) = [0.11982484861634352, 0.0738482775338022, 0.15032573786307354]
+Testing f1 (micro, macro, weighted) = [0.11532544378698224, 0.07007402892008614, 0.14619824436540949]
+
+Training auc (macro, weighted) = Error
+Testing auc (macro, weighted) = Error
+
+Hyper-Parameters: 
+
+Learning Rate: 0.8
+Epochs: 100
+
+Accuracy Score for Predicting on Training Data: 0.1198
+Accuracy Score for Predicting on Test Data: 0.1153
+
+Overall Average Probabilities
+-------------------------------------
+Section 1: 5.21%
+Section 2: 5.26%
+Section 3: 5.07%
+Section 4: 5.24%
+Section 5: 4.46%
+
+Field Slice Counts for Training Data
+--------------------------------------------------
+Section	Truth	Prediction
+0		2624		326.0
+1		2654		9.0
+2		2568		19.0
+3		2668		2362.0
+4		2269		12467.0
+5		3666		2476.0
+6		4643		18115.0
+7		4698		3056.0
+8		4860		877.0
+9		3924		3298.0
+10		2168		5037.0
+11		4026		2612.0
+12		4671		45.0
+13		3614		nan
+14		1646		nan
+Amount Correct: 6075
+Amount Incorrect: 44624
+
+Field Slice Counts for Testing Data
+--------------------------------------------------
+Section	Truth	Prediction
+0		852		136.0
+1		918		5.0
+2		881		811.0
+3		906		4231.0
+4		763		849.0
+5		1176		5962.0
+6		1604		953.0
+7		1519		284.0
+8		1573		1057.0
+9		1246		1709.0
+10		742		885.0
+11		1416		18.0
+12		1522		nan
+13		1214		nan
+14		568		nan
+Amount Correct: 1949
+Amount Incorrect: 14951

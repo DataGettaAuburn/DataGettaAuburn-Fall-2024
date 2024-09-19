@@ -1,0 +1,58 @@
+Model Type: DecisionTree
+
+Training Size = 41841
+Testing Size = 13947
+
+Training Accuracy = 0.3519275351927535
+Testing Accuracy = 0.32444253244425325
+
+Training Average Error = 0.9304270930427093
+Testing Average Error = 0.9626442962644296
+
+Training Recall = [0.17987679671457907, 0.6315351930537595, 0.2535031847133758, 0.32197014223580583, 0.24969987995198079]
+Testing Recall = [0.14687629292511378, 0.5952184666117065, 0.23000872346612386, 0.30173035328046144, 0.22407628128724671]
+
+Training f1 (micro, macro, weighted) = [0.3519275351927535, 0.3237018997963085, 0.37006880560370975]
+Testing f1 (micro, macro, weighted) = [0.32444253244425325, 0.2939937692156538, 0.34386663679701807]
+
+Training auc (macro, weighted) = [0.986160832050016, 0.983030645716251]
+Testing auc (macro, weighted) = [0.9855868526682533, 0.9820127230692338]
+
+Hyper-Parameters: 
+
+Max Tree Depth: 50
+Max Tree Features: 30
+Max Leaf Nodes: 150
+
+Accuracy Score for Predicting on Training Data: 0.3519
+Accuracy Score for Predicting on Test Data: 0.3244
+
+Overall Average Probabilities
+-------------------------------------
+Section 1: 17.23%
+Section 2: 25.91%
+Section 3: 24.45%
+Section 4: 20.46%
+Section 5: 11.95%
+
+Field Slice Counts for Training Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		7305		3112
+2		10826		19916
+3		10205		7652
+4		8507		7597
+5		4998		3564
+Amount Correct: 14725
+Amount Incorrect: 27116
+
+Field Slice Counts for Testing Data
+--------------------------------------------------
+Section	Truth	Prediction
+1		2417		1025
+2		3639		6605
+3		3439		2602
+4		2774		2550
+5		1678		1165
+Amount Correct: 4525
+Amount Incorrect: 9422

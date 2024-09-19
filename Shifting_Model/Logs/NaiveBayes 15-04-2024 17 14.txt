@@ -1,0 +1,76 @@
+Model Type: NaiveBayes
+
+Training Size = 50699
+Testing Size = 16900
+
+Training Accuracy = 0.09978500562141265
+Testing Accuracy = 0.09467455621301775
+
+Training Average Error = 4.5900510858202335
+Testing Average Error = 4.619526627218935
+
+Training Recall = [0.0007535795026375283, 0.0, 0.0, 0.0, 0.036824877250409165, 0.06332112858065905, 0.08280119199659429, 0.13415637860082305, 0.19597349643221204, 0.0, 0.00273224043715847, 0.3727253264825519, 0.1793027116768124, 0.0, 0.15929878048780488]
+Testing Recall = [0.0, 0.0, 0.0, 0.0, 0.05357142857142857, 0.07294264339152119, 0.07899934167215274, 0.12460267005721551, 0.19341894060995185, 0.0, 0.00211864406779661, 0.3528252299605782, 0.14991762767710048, 0.0, 0.16549295774647887]
+
+Training f1 (micro, macro, weighted) = [0.09978500562141265, 0.05867945283266023, 0.12782266476402926]
+Testing f1 (micro, macro, weighted) = [0.09467455621301775, 0.05757954519692425, 0.12036827157677313]
+
+Training auc (macro, weighted) = Error
+Testing auc (macro, weighted) = Error
+
+Hyper-Parameters: 
+
+Var Smoothing: 1e-09
+
+Accuracy Score for Predicting on Training Data: 0.0998
+Accuracy Score for Predicting on Test Data: 0.0947
+
+Overall Average Probabilities
+-------------------------------------
+Section 1: 6.13%
+Section 2: 5.11%
+Section 3: 5.06%
+Section 4: 4.93%
+Section 5: 4.21%
+
+Field Slice Counts for Training Data
+--------------------------------------------------
+Section	Truth	Prediction
+0		2624		5896.0
+1		2654		15.0
+2		2568		2.0
+3		2668		1.0
+4		2269		1584.0
+5		3666		2516.0
+6		4643		3531.0
+7		4698		5848.0
+8		4860		6400.0
+9		3924		129.0
+10		2168		17593.0
+11		4026		7184.0
+12		4671		nan
+13		3614		nan
+14		1646		nan
+Amount Correct: 5059
+Amount Incorrect: 45640
+
+Field Slice Counts for Testing Data
+--------------------------------------------------
+Section	Truth	Prediction
+0		852		1981.0
+1		918		5.0
+2		881		1.0
+3		906		1.0
+4		763		579.0
+5		1176		816.0
+6		1604		1151.0
+7		1519		1851.0
+8		1573		2122.0
+9		1246		33.0
+10		742		5933.0
+11		1416		2427.0
+12		1522		nan
+13		1214		nan
+14		568		nan
+Amount Correct: 1600
+Amount Incorrect: 15300
