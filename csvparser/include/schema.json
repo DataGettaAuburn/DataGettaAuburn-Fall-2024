@@ -33,7 +33,7 @@
             "type": "int"
         },
         {
-            "name": "TopBottom",
+            "name": "Top/Bottom",
             "type": "varchar"
         },
         {
@@ -109,7 +109,7 @@
             "type": "date"
         },
         {
-            "name": "UTCtime",
+            "name": "UTCTime",
             "type": "time"
         },
         {
@@ -161,7 +161,7 @@
             "type": "varchar"
         },
         {
-            "name": "PitcherID",
+            "name": "PitcherId",
             "type": "int"
         },
         {
@@ -225,7 +225,7 @@
             "type": "decimal"
         },
         {
-            "name": "InducedVert",
+            "name": "InducedVertBreak",
             "type": "decimal"
         },
         {
@@ -369,7 +369,7 @@
             "type": "varchar"
         },
         {
-            "name": "CatcherID",
+            "name": "CatcherId",
             "type": "int"
         },
         {
@@ -485,7 +485,7 @@
             "type": "varchar"
         },
         {
-            "name": "BatterID",
+            "name": "BatterId",
             "type": "int"
         },
         {
@@ -529,7 +529,7 @@
             "type": "decimal"
         },
         {
-            "name": "LastTracked",
+            "name": "LastTrackedDistance",
             "type": "decimal"
         },
         {
