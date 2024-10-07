@@ -1,0 +1,21 @@
+###################################
+# .yaml file containing variables
+# Auth: Micah Key
+###################################
+
+### SQL ###
+SQL_SERVER_NAME : 'datagetta.cse.eng.auburn.edu' 
+SQL_DB_NAME : 'datagetta_db'
+SQL_USERNAME : 'dbgetta'
+SQL_PASSWORD : 'm269A178J92JUk47Jd28jTah2aH1'
+SQL_PORT : '5432'
+SCHEMA_TXT : '../include/database_schema_AUDB.txt'
+JSON_MAP : '../include/schema.json'
+
+### Trackman ###
+TRACKMAN_DIR : '/./v3/2024/'
+CSV_DIR : '../csv/'
+TRACKMAN_URL : 'ftp.trackmanbaseball.com'
+TRACKMAN_USERNAME : 'Auburn'
+TRACKMAN_PASSWORD : 'kA#R2,KNAP'
+FILES_TXT : '../include/db_files.txt'
