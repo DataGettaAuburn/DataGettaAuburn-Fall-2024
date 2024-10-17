@@ -46,20 +46,14 @@ services:
     volumes:
       - ../ext_files/combined_dataset.csv:/combined_dataset.csv
       - ../ext_files/db_info.txt:/db_info.txt
-      - csvparser:/csvparser
+      - ./csvparser:/csvparser
     command:
       - |
         apt update
         apt install -y git gcc pkg-config libcairo2-dev
-        git clone https://github.com/tmgavron/shifting_model.git
-        cp /combined_dataset.csv shifting_model/Data/
-        cd shifting_model && pip install -r requirements.txt && cd /
-        git clone https://github.com/IsaiahGallardo/SDProjectAIOrange.git
-        cp /db_info.txt SDProjectAIOrange/
-        cd SDProjectAIOrange && pip install -r requirements.txt && cd /
-        cd csvparser && pip install -r requirements.txt
+        git clone https://github.com/DataGettaAuburn/DataGettaAuburn-Fall-2024.git &&
+        cd csvparser pip install -r requirements.txt &&
         tail -f /dev/null
-
 networks:
   datagetta_net:
     driver: bridge
