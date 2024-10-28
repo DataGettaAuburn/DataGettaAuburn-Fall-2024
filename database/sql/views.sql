@@ -281,3 +281,24 @@ and "InducedVert" != 'NaN' and "HorzBreak" != 'NaN' and "RelHeight" != 'NaN' and
 and "SpinRate" != 'NaN' and "SpinAxis" != 'NaN' and "VertApprAngle" != 'NaN' and "HorzApprAngle" != 'NaN'
 group by ("Pitcher", "PitcherTeam", "PitcherThrows", "PitchType");
     
+-- Holds practice pitching data from 2024 season
+drop view if exists practice_pitching_stats_view_2024;
+create or replace view practice_pitching_stats_view_2024 as
+select "Pitcher", "PitcherTeam",
+        COUNT(*) as total_pitches,
+        COUNT(*) filter (where "TaggedPitchType" = 'Curveball') as curveball_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Four-Seam') as fourseam_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Sinker') as sinker_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Slider') as slider_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Fastball' and "TaggedPitchType" != 'Four-Seam') as twoseam_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Changeup') as changeup_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Cutter') as cutter_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Splitter') as splitter_count,
+        COUNT(*) filter (where "TaggedPitchType" = 'Other' or "TaggedPitchType" = 'NaN') as other_count,
+        AVG("RelSpeed") as avg_rel_speed,
+        AVG("InducedVert") as avg_induced_vert,
+        AVG("HorzBreak") as avg_horz_break,
+        AVG("SpinRate") as avg_spin_rate,
+        AVG("SpinAxis") as avg_spin_axis
+from practice_pitching_data
+group by ("Pitcher", "PitcherTeam");

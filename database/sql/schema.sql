@@ -109,6 +109,27 @@ CREATE TABLE IF NOT EXISTS "trackman_pitcher" (
   "PitchMovementConfidence" varchar
 );
 
+CREATE TABLE IF NOT EXISTS "practice_pitching_data" (
+  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "PitchNo" int,
+  "Pitcher" varchar,
+  "PitcherID" int,
+  "PitcherThrows" varchar,
+  "PitcherTeam" varchar,
+  "TaggedPitchType" varchar,
+  "AutoPitchType" varchar,
+  "RelSpeed" decimal,
+  "InducedVert" decimal,
+  "HorzBreak" decimal,
+  "SpinRate" decimal,
+  "SpinAxis" decimal,
+  "PlateLocHeight" decimal,
+  "PlateLocSide" decimal,
+  "PitchTime" time,
+  "PracticeSessionID" varchar,
+  "Season" varchar DEFAULT '2024'
+);
+
 CREATE TABLE IF NOT EXISTS "trackman_catcher" (
   "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "Catcher" varchar,
@@ -253,6 +274,8 @@ ALTER TABLE "trackman_catcher" ADD CONSTRAINT "trackman_catcher_PitchUID_fkey1" 
 ALTER TABLE "trackman_pitcher" ADD CONSTRAINT "trackman_pitcher_PitchUID_fkey1" FOREIGN KEY ("PitchUID") REFERENCES "trackman_metadata" ("PitchUID") ON DELETE CASCADE;
 
 ALTER TABLE "trackman_pitcher" ADD CONSTRAINT "trackman_pitcher_Pitcher_PitcherTeam_fkey1" FOREIGN KEY ("Pitcher", "PitcherTeam") REFERENCES "players" ("PlayerName", "TeamName") ON DELETE CASCADE;
+
+ALTER TABLE "practice_pitching_data" ADD CONSTRAINT "practice_pitching_data_Pitcher_PitcherTeam_fkey" FOREIGN KEY ("Pitcher", "PitcherTeam") REFERENCES "players" ("PlayerName", "TeamName") ON DELETE CASCADE;
 
 ALTER TABLE "trackman_catcher" ADD CONSTRAINT "trackman_catcher_Catcher_CatcherTeam_fkey1" FOREIGN KEY ("Catcher", "CatcherTeam") REFERENCES "players" ("PlayerName", "TeamName") ON DELETE CASCADE;
 
