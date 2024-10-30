@@ -52,7 +52,7 @@ services:
         apt update
         apt install -y git gcc pkg-config libcairo2-dev
         git clone https://github.com/DataGettaAuburn/DataGettaAuburn-Fall-2024.git &&
-        cd csvparser pip install -r requirements.txt &&
+        cd DatagettaAuburn-Fall-2024/csvparser && pip install -r requirements.txt &&
         tail -f /dev/null
 networks:
   datagetta_net:
