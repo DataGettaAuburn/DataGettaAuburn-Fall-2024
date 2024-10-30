@@ -109,26 +109,6 @@ CREATE TABLE IF NOT EXISTS "trackman_pitcher" (
   "PitchMovementConfidence" varchar
 );
 
-CREATE TABLE IF NOT EXISTS "practice_pitching_data" (
-  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  "PitchNo" int,
-  "Pitcher" varchar,
-  "PitcherID" int,
-  "PitcherThrows" varchar,
-  "PitcherTeam" varchar,
-  "TaggedPitchType" varchar,
-  "AutoPitchType" varchar,
-  "RelSpeed" decimal,
-  "InducedVert" decimal,
-  "HorzBreak" decimal,
-  "SpinRate" decimal,
-  "SpinAxis" decimal,
-  "PlateLocHeight" decimal,
-  "PlateLocSide" decimal,
-  "PitchTime" time,
-  "PracticeSessionID" varchar,
-  "Season" varchar DEFAULT '2024'
-);
 
 CREATE TABLE IF NOT EXISTS "trackman_catcher" (
   "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
@@ -217,6 +197,107 @@ CREATE TABLE IF NOT EXISTS "trackman_batter" (
   "HitLaunchConfidence" varchar,
   "HitLandingConfidence" varchar
 );
+
+CREATE TABLE IF NOT EXISTS "practice_trackman_metadata" (
+  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "GameDate" date,
+  "PitchTime" time,
+  "Inning" int CHECK ("Inning" > 0),
+  "TopBottom" varchar CHECK ("TopBottom" IN ('Top', 'Bottom')),
+  "Outs" int CHECK ("Outs" BETWEEN 0 AND 2),
+  "Balls" int CHECK ("Balls" BETWEEN 0 AND 3),
+  "Strikes" int CHECK ("Strikes" BETWEEN 0 AND 2),
+  "PitchCall" varchar,
+  "KorBB" varchar CHECK ("KorBB" IN ('K', 'BB', 'HBP', 'Other')),
+  "TaggedHitType" varchar,
+  "PlayResult" varchar,
+  "OutsOnPlay" int CHECK ("OutsOnPlay" BETWEEN 0 AND 3),
+  "RunsScored" int CHECK ("RunsScored" >= 0),
+  "RunnersAt" varchar,
+  "HomeTeam" varchar REFERENCES "teams" ("TeamName") ON DELETE CASCADE,
+  "AwayTeam" varchar REFERENCES "teams" ("TeamName") ON DELETE CASCADE,
+  "Stadium" varchar,
+  "Level" varchar,
+  "League" varchar,
+  "GameID" varchar UNIQUE,
+  "GameUID" varchar UNIQUE,
+  "UTCDate" date,
+  "UTCtime" time,
+  "LocalDateTime" timestamp,
+  "UTCDateTime" timestamp,
+  "AutoHitType" varchar,
+  "System" varchar,
+  "HomeTeamForeignID" varchar,
+  "AwayTeamForeignID" varchar,
+  "GameForeignID" varchar,
+  "PlayID" varchar
+);
+
+CREATE TABLE IF NOT EXISTS "practice_pitching_data" (
+  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "PitchNo" int,
+  "Pitcher" varchar,
+  "PitcherID" int,
+  "PitcherThrows" varchar,
+  "PitcherTeam" varchar,
+  "TaggedPitchType" varchar,
+  "AutoPitchType" varchar,
+  "RelSpeed" decimal,
+  "InducedVert" decimal,
+  "HorzBreak" decimal,
+  "SpinRate" decimal,
+  "SpinAxis" decimal,
+  "PlateLocHeight" decimal,
+  "PlateLocSide" decimal,
+  "PitchTime" time,
+  "PracticeSessionID" varchar,
+  "Season" varchar DEFAULT '2024'
+);
+
+CREATE TABLE IF NOT EXISTS "practice_batting_data" (
+  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "Batter" varchar,
+  "BatterID" int,
+  "BatterSide" varchar,
+  "BatterTeam" varchar,
+  "ExitSpeed" decimal,
+  "Angle" decimal,
+  "Direction" decimal,
+  "HitSpinRate" decimal,
+  "PositionAt110X" decimal,
+  "PositionAt110Y" decimal,
+  "PositionAt110Z" decimal,
+  "Distance" decimal,
+  "LastTracked" decimal,
+  "Bearing" decimal,
+  "HangTime" decimal,
+  "EffectiveVelo" decimal,
+  "MaxHeight" decimal,
+  "MeasuredDuration" decimal,
+  "ContactPositionX" decimal,
+  "ContactPositionY" decimal,
+  "ContactPositionZ" decimal,
+  "HitSpinAxis" decimal
+);
+
+CREATE TABLE IF NOT EXISTS "practice_catching_data" (
+  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  "Catcher" varchar,
+  "CatcherID" int,
+  "CatcherThrows" varchar,
+  "CatcherTeam" varchar,
+  "ThrowSpeed" decimal,
+  "PopTime" decimal,
+  "ExchangeTime" decimal,
+  "TimeToBase" decimal,
+  "CatchPositionX" decimal,
+  "CatchPositionY" decimal,
+  "CatchPositionZ" decimal,
+  "ThrowPositionX" decimal,
+  "ThrowPositionY" decimal,
+  "ThrowPositionZ" decimal
+);
+
 
 CREATE TABLE IF NOT EXISTS "seasons" (
   "SeasonTitle" varchar UNIQUE PRIMARY KEY,
