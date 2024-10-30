@@ -253,7 +253,7 @@ def fix_headers(csvFile, changes):
 # end of fix_headers()
 
 # Method that calls sql to move the data from the staging table -> sql tables
-def distribute_data(conn, stage_name):
+def distribute_game_data(conn, stage_name):
     print('Uploading...')
     global uploadErr_
     uploadErr_ = True
@@ -364,10 +364,109 @@ def distribute_data(conn, stage_name):
         print(f"Error distributing data: {e}")
 # end of distribute_data()
 
+def distribute_practice_data(conn, stage_name):
+    print('Uploading to practice tables...')
+    global uploadErr_
+    uploadErr_ = True
+
+    try:
+        curs = conn.cursor()
+
+        # Insert metadata into practice_trackman_metadata
+        print('Inserting into practice_trackman_metadata...')
+        insert_metadata = f"""
+        INSERT INTO public.practice_trackman_metadata
+                    ("PitchUID", "GameDate", "PitchTime", "Inning", "TopBottom", "Outs", "Balls", "Strikes", "PitchCall", 
+                     "KorBB", "TaggedHitType", "PlayResult", "OutsOnPlay", "RunsScored", "RunnersAt", "HomeTeam", 
+                     "AwayTeam", "Stadium", "Level", "League", "GameID", "GameUID", "UTCDate", "UTCtime", 
+                     "LocalDateTime", "UTCDateTime", "AutoHitType", "System", "HomeTeamForeignID", "AwayTeamForeignID", 
+                     "GameForeignID", "PlayID")
+        SELECT "pitchuid", "gamedate", "pitchtime", "inning", "topbottom", "outs", "balls", "strikes", "pitchcall", 
+               "korbb", "taggedhittype", "playresult", "outsonplay", "runsscored", "runnersat", "hometeam", 
+               "awayteam", "stadium", "level", "league", "gameid", "gameuid", "utcdate", "utctime", 
+               "localdatetime", "utcdatetime", "autohittype", "system", "hometeamforeignid", "awayteamforeignid", 
+               "gameforeignid", "playid"
+        FROM {stage_name}
+        ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_metadata)
+        time.sleep(0.1)
+
+        # Insert pitching data into practice_pitching_data
+        print('Inserting into practice_pitching_data...')
+        insert_pitching = f"""
+        INSERT INTO public.practice_pitching_data
+                    ("PitchUID", "PitchNo", "Pitcher", "PitcherID", "PitcherThrows", "PitcherTeam", 
+                     "TaggedPitchType", "AutoPitchType", "RelSpeed", "InducedVert", "HorzBreak", "SpinRate", 
+                     "SpinAxis", "PlateLocHeight", "PlateLocSide", "PitchTime", "PracticeSessionID", "Season")
+        SELECT "pitchuid", "pitchno", COALESCE("pitcher", 'PitchDummy'), "pitcherid", "pitcherthrows", "pitcherteam", 
+               "taggedpitchtype", "autopitchtype", "relspeed", "inducedvert", "horzbreak", "spinrate", 
+               "spinaxis", "platelocheight", "platelocside", "pitchtime", "practicesessionid", "season"
+        FROM {stage_name}
+        ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_pitching)
+        time.sleep(0.1)
+
+        # Insert batting data into practice_batting_data
+        print('Inserting into practice_batting_data...')
+        insert_batting = f"""
+        INSERT INTO public.practice_batting_data
+                    ("PitchUID", "Batter", "BatterID", "BatterSide", "BatterTeam", "ExitSpeed", "Angle", 
+                     "Direction", "HitSpinRate", "PositionAt110X", "PositionAt110Y", "PositionAt110Z", "Distance", 
+                     "LastTracked", "Bearing", "HangTime", "EffectiveVelo", "MaxHeight", "MeasuredDuration", 
+                     "ContactPositionX", "ContactPositionY", "ContactPositionZ", "HitSpinAxis")
+        SELECT "pitchuid", COALESCE("batter", 'BatterDummy'), "batterid", "batterside", "batterteam", "exitspeed", 
+               "angle", "direction", "hitspinrate", "positionat110x", "positionat110y", "positionat110z", 
+               "distance", "lasttracked", "bearing", "hangtime", "effectivevelo", "maxheight", "measuredduration", 
+               "contactpositionx", "contactpositiony", "contactpositionz", "hitspinaxis"
+        FROM {stage_name}
+        ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_batting)
+        time.sleep(0.1)
+
+        # Insert catching data into practice_catching_data
+        print('Inserting into practice_catching_data...')
+        insert_catching = f"""
+        INSERT INTO public.practice_catching_data
+                    ("PitchUID", "Catcher", "CatcherID", "CatcherThrows", "CatcherTeam", "ThrowSpeed", "PopTime", 
+                     "ExchangeTime", "TimeToBase", "CatchPositionX", "CatchPositionY", "CatchPositionZ", 
+                     "ThrowPositionX", "ThrowPositionY", "ThrowPositionZ")
+        SELECT "pitchuid", COALESCE("catcher", 'CatchDummy'), "catcherid", "catcherthrows", "catcherteam", 
+               "throwspeed", "poptime", "exchangetime", "timetobase", "catchpositionx", "catchpositiony", 
+               "catchpositionz", "throwpositionx", "throwpositiony", "throwpositionz"
+        FROM {stage_name}
+        ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_catching)
+        time.sleep(0.1)
+
+        # Commit the transaction
+        conn.commit()
+        print("Data distributed to practice tables successfully\n")
+
+        # Set upload error flag to False if no errors occurred
+        uploadErr_ = False
+
+    except Exception as e:
+        print(f"Error distributing data to practice tables: {e}")
+#End of distribute_practice_data
+
 # 'Main' function, called from ftpPuller.py
 def runParser(csvFile):
     # parse yaml variables
     init()
+
+    # Check the filename criteria
+    filename = os.path.basename(csvFile)
+    if "PlainsmanPark-Private" in filename:
+        target_tables = "practice"
+    elif "private" in filename:
+        print(f"File '{csvFile}' ignored due to 'private' keyword without 'PlainsmanPark-Private'.")
+        return  # Skip this file
+    else:
+        target_tables = "game_data"
 
     # fix file headers
     changes = { 'Date': 'GameDate',
@@ -393,7 +492,11 @@ def runParser(csvFile):
 
     parse(csvFile, conn, stage_name)
 
-    distribute_data(conn, stage_name)
+        # Distribute data to appropriate tables based on the filename
+    if target_tables == "practice":
+        distribute_practice_data(conn, stage_name)
+    elif target_tables == "game_data":
+        distribute_game_data(conn, stage_name)
 
     # close connection
     conn.close()
