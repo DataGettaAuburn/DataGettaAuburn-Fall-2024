@@ -201,6 +201,106 @@ Table trackman_batter {
  HitLandingConfidence varchar
 }
 
+Table practice_trackman_metadata {
+  PitchUID uuid [primary key, unique, default: `uuid_generate_v4()`]
+  GameDate date
+  PitchTime time
+  Inning int
+  TopBottom varchar
+  Outs int
+  Balls int
+  Strikes int
+  PitchCall varchar
+  KorBB varchar
+  TaggedHitType varchar
+  PlayResult varchar
+  OutsOnPlay int
+  RunsScored int
+  RunnersAt varchar
+  HomeTeam varchar
+  AwayTeam varchar
+  Stadium varchar
+  Level varchar
+  League varchar
+  GameID varchar
+  GameUID varchar
+  UTCDate date
+  UTCtime time
+  LocalDateTime timestamp
+  UTCDateTime timestamp
+  AutoHitType varchar
+  System varchar
+  HomeTeamForeignID varchar
+  AwayTeamForeignID varchar
+  GameForeignID varchar
+  PlayID varchar
+}
+
+Table practice_pitching_data {
+  PitchUID uuid [primary key, unique, default: `uuid_generate_v4()`]
+  PitchNo int
+  Pitcher varchar
+  PitcherID int
+  PitcherThrows varchar
+  PitcherTeam varchar
+  TaggedPitchType varchar
+  AutoPitchType varchar
+  RelSpeed decimal
+  InducedVert decimal
+  HorzBreak decimal
+  SpinRate decimal
+  SpinAxis decimal
+  PlateLocHeight decimal
+  PlateLocSide decimal
+  PitchTime time
+  PracticeSessionID varchar
+  Season varchar [default: `2024`]
+}
+
+Table practice_batting_data {
+  PitchUID uuid [primary key, unique, default: `uuid_generate_v4()`]
+  Batter varchar
+  BatterID int
+  BatterSide varchar
+  BatterTeam varchar
+  ExitSpeed decimal
+  Angle decimal
+  Direction decimal
+  HitSpinRate decimal
+  PositionAt110X decimal
+  PositionAt110Y decimal
+  PositionAt110Z decimal
+  Distance decimal
+  LastTracked decimal
+  Bearing decimal
+  HangTime decimal
+  EffectiveVelo decimal
+  MaxHeight decimal
+  MeasuredDuration decimal
+  ContactPositionX decimal
+  ContactPositionY decimal
+  ContactPositionZ decimal
+  HitSpinAxis decimal
+}
+
+Table practice_catching_data {
+  PitchUID uuid [primary key, unique, default: `uuid_generate_v4()`]
+  Catcher varchar
+  CatcherID int
+  CatcherThrows varchar
+  CatcherTeam varchar
+  ThrowSpeed decimal
+  PopTime decimal
+  ExchangeTime decimal
+  TimeToBase decimal
+  CatchPositionX decimal
+  CatchPositionY decimal
+  CatchPositionZ decimal
+  ThrowPositionX decimal
+  ThrowPositionY decimal
+  ThrowPositionZ decimal
+}
+
 Table seasons {
  SeasonTitle varchar [primary key, unique]
  StartDate date
