@@ -49,10 +49,11 @@ services:
       - ./csvparser:/csvparser
     command:
       - |
-        apt update
-        apt install -y git gcc pkg-config libcairo2-dev
-        git clone https://github.com/DataGettaAuburn/DataGettaAuburn-Fall-2024.git &&
-        cd DatagettaAuburn-Fall-2024/csvparser && pip install -r requirements.txt &&
+        apt update && \
+        apt install -y git gcc pkg-config libcairo2-dev && \
+        git clone https://github.com/DataGettaAuburn/DataGettaAuburn-Fall-2024.git && \
+        cd DataGettaAuburn-Fall-2024/csvparser && \
+        pip install -r requirements.txt && \
         tail -f /dev/null
 networks:
   datagetta_net:
