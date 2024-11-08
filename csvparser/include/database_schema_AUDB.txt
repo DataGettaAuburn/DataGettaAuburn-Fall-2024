@@ -283,24 +283,6 @@ Table practice_batting_data {
   HitSpinAxis decimal
 }
 
-Table practice_catching_data {
-  PitchUID uuid [primary key, unique, default: `uuid_generate_v4()`]
-  Catcher varchar
-  CatcherID int
-  CatcherThrows varchar
-  CatcherTeam varchar
-  ThrowSpeed decimal
-  PopTime decimal
-  ExchangeTime decimal
-  TimeToBase decimal
-  CatchPositionX decimal
-  CatchPositionY decimal
-  CatchPositionZ decimal
-  ThrowPositionX decimal
-  ThrowPositionY decimal
-  ThrowPositionZ decimal
-}
-
 Table seasons {
  SeasonTitle varchar [primary key, unique]
  StartDate date
@@ -311,7 +293,6 @@ Ref: trackman_metadata.PitchUID - trackman_batter.PitchUID
 Ref: trackman_metadata.PitchUID - trackman_catcher.PitchUID
 Ref: trackman_metadata.PitchUID - trackman_pitcher.PitchUID
 Ref: trackman_pitcher.(Pitcher, PitcherTeam) > players.(PlayerName, TeamName)
-Ref: trackman_catcher.(Catcher, CatcherTeam) > players.(PlayerName, TeamName)
 Ref: trackman_batter.(Batter, BatterTeam) > players.(PlayerName, TeamName)
 Ref: players.TeamName > teams.TeamName
 Ref: teams.Conference > conferences.ConferenceName
