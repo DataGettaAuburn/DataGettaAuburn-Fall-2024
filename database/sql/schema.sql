@@ -347,38 +347,6 @@ CREATE TABLE IF NOT EXISTS "practice_batting_data" (
   "HitLandingConfidence" varchar
 );
 
-CREATE TABLE IF NOT EXISTS "practice_catching_data" (
-  "PitchUID" uuid UNIQUE PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  "Catcher" varchar,
-  "CatcherID" int,
-  "CatcherThrows" varchar,
-  "CatcherTeam" varchar,
-  "ThrowSpeed" decimal,
-  "PopTime" decimal,
-  "ExchangeTime" decimal,
-  "TimeToBase" decimal,
-  "CatchPositionX" decimal,
-  "CatchPositionY" decimal,
-  "CatchPositionZ" decimal,
-  "ThrowPositionX" decimal,
-  "ThrowPositionY" decimal,
-  "ThrowPositionZ" decimal,
-  "BasePositionX" decimal,
-  "BasePositionY" decimal,
-  "BasePositionZ" decimal,
-  "ThrowTrajectoryXc0" decimal,
-  "ThrowTrajectoryXc1" decimal,
-  "ThrowTrajectoryXc2" decimal,
-  "ThrowTrajectoryYc0" decimal,
-  "ThrowTrajectoryYc1" decimal,
-  "ThrowTrajectoryYc2" decimal,
-  "ThrowTrajectoryZc0" decimal,
-  "ThrowTrajectoryZc1" decimal,
-  "ThrowTrajectoryZc2" decimal,
-  "CatcherThrowCatchConfidence" varchar,
-  "CatcherThrowReleaseConfidence" varchar,
-  "CatcherThrowLocationConfidence" varchar
-);
 
 
 CREATE TABLE IF NOT EXISTS "seasons" (
