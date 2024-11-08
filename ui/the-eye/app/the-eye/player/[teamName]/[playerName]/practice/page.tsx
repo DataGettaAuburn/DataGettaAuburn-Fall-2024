@@ -5,8 +5,8 @@
 * A redirect is used to make it easier to route to a player's page from other parts of the app,
 * then from here the dynamic routes will be filled out to query the database and populate the stats tables.
 * 
-* author: Daniel Harrison
-* lastEdit: 11-08-2024
+* author: Braden Mosley
+* lastEdit: 04-15-2024
 */
 
 import dayjs from 'dayjs';
@@ -20,11 +20,11 @@ export default function Page (
     const decodedPlayerName = decodeURIComponent(params.playerName);
     
     // Will have to change to the start of the current season
-    const startOfSeason = '2024-08-15';
+    const startOfSeason = '2024-08-16';
     
     const currentDate = dayjs().format('YYYY-MM-DD');
 
     const baseURL = '/the-eye/player/'
     
-    permanentRedirect(baseURL.concat(decodedTeamName + '/' + decodedPlayerName + '/' + 'stats' + '/' + startOfSeason + '/' + currentDate))
+    permanentRedirect(baseURL.concat(decodedTeamName + '/' + decodedPlayerName + '/' + 'practice' + '/' + startOfSeason + '/' + currentDate))
 }

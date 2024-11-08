@@ -13,7 +13,7 @@ import StatsTableSkeleton from "@/app/the-eye/player/components/StatsTableSkelet
 
 export default function Page (
     { params }:
-    { params: { teamName: string, playerName: string, date: string } })
+    { params: { teamName: string, playerName: string, startDate: string, endDate: string } })
 {
     const decodedTeamName = decodeURIComponent(params.teamName);
     const decodedPlayerName = decodeURIComponent(params.playerName);
