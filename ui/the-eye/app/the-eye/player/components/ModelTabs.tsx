@@ -76,7 +76,7 @@ export default function ModelTabs ({team, player}: {team: string, player: string
                 underline = {practiceUnderline}
             />
 
-            {/* Inactive Tabs for machine learning models */}
+            {/* Inactive Tabs */}
             {/*
             <Link 
                 href = {currentURL.concat(team + '/' + player).concat('/shiftModel')}
