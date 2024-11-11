@@ -122,7 +122,7 @@ def staging(conn, stage_name):
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-        # Read CSV, handle empty cells, and set NaN values to None
+          # Read CSV, handle empty cells, and set NaN values to None
         df = pd.read_csv(csvFile, na_values=[''])
         df = df.where(pd.notnull(df), None)
 
@@ -139,9 +139,6 @@ def parse(csvFile, conn, stage_name):
         # Define PostgreSQL integer limit
         int_limit = 2147483647
 
-
-        # Execute the INSERT statement with the data
-        curs.executemany(insert_statement, data)
 
         # Insert data row by row to isolate errors
         for i, row in enumerate(df.itertuples(index=False, name=None)):
@@ -166,6 +163,7 @@ def parse(csvFile, conn, stage_name):
         conn.commit()  # Commit once at the end if no critical errors
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
+        
         ### Print data in stage table *Debugging ###
         #print("\n##### Table Info ######\n")
         
