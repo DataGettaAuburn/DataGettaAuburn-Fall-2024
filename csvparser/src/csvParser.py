@@ -129,17 +129,7 @@ def parse(csvFile, conn, stage_name):
         df = df.where(pd.notnull(df), None)
 
         print(f'Read {len(df)} records from {csvFile}')
-
-        int_limit = 2147483647
-        large_values = df.select_dtypes(include=['int64']).apply(lambda x: x[x.abs() > int_limit], axis=0).dropna(how='all')
-    
-        if not large_values.empty:
-            print("Warning: The following columns contain values that exceed PostgreSQL's INTEGER range:")
-            for column in large_values.columns:
-                print(f"{column}: {large_values[column].tolist()}")
-                # Optionally, cap values or convert the column to object if needed
-                df[column] = df[column].apply(lambda x: min(x, int_limit) if x > int_limit else x)
-
+        
         curs = conn.cursor()
 
         # Get column names from the CSV file
@@ -148,12 +138,41 @@ def parse(csvFile, conn, stage_name):
         # Construct the parameterized INSERT INTO statement
         insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
 
+
+        # Define PostgreSQL integer limit
+        int_limit = 2147483647
         # Prepare data for insertion
         data = [tuple(row) for row in df.itertuples(index=False, name=None)]
 
         # Execute the INSERT statement with the data
         curs.executemany(insert_statement, data)
 
+
+        # Insert data row by row to isolate errors
+        for i, row in enumerate(df.itertuples(index=False, name=None)):
+            try:
+                # Check for out-of-range integer values in the row
+                out_of_range_columns = [
+                    (df.columns[j], value) for j, value in enumerate(row) 
+                    if isinstance(value, int) and abs(value) > int_limit
+                ]
+                
+                # If any out-of-range values found, log and skip this row
+                if out_of_range_columns:
+                    print(f"Warning: Row {i} has out-of-range integer values: {out_of_range_columns}")
+                    continue  # Skip this row
+
+                # Attempt to insert the row into the staging table
+                curs.execute(insert_statement, row)
+
+            except Exception as e:
+                # Log the error and problematic row, then rollback
+                print(f"Error with row {i}: {row} - {e}")
+                conn.rollback()  # Rollback to avoid transaction lock
+                continue  # Skip to next row after error
+
+        # Commit if no errors
+        conn.commit()
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
         ### Print data in stage table *Debugging ###
