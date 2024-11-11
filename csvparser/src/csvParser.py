@@ -130,6 +130,16 @@ def parse(csvFile, conn, stage_name):
 
         print(f'Read {len(df)} records from {csvFile}')
 
+        int_limit = 2147483647
+        large_values = df.select_dtypes(include=['int64']).apply(lambda x: x[x.abs() > int_limit], axis=0).dropna(how='all')
+    
+        if not large_values.empty:
+            print("Warning: The following columns contain values that exceed PostgreSQL's INTEGER range:")
+            for column in large_values.columns:
+                print(f"{column}: {large_values[column].tolist()}")
+                # Optionally, cap values or convert the column to object if needed
+                df[column] = df[column].apply(lambda x: min(x, int_limit) if x > int_limit else x)
+
         curs = conn.cursor()
 
         # Get column names from the CSV file
