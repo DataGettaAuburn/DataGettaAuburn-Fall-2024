@@ -139,6 +139,11 @@ def parse(csvFile, conn, stage_name):
         # Define PostgreSQL integer limit
         int_limit = 2147483647
 
+
+        # Execute the INSERT statement with the data
+        curs.executemany(insert_statement, data)
+
+        # Insert data row by row to isolate errors
         for i, row in enumerate(df.itertuples(index=False, name=None)):
             try:
                 # Convert each row to tuple and check for out-of-range integers
