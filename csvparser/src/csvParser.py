@@ -138,8 +138,15 @@ def parse(csvFile, conn, stage_name):
         # Construct the parameterized INSERT INTO statement
         insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
 
+
         # Define PostgreSQL integer limit
         int_limit = 2147483647
+        # Prepare data for insertion
+        data = [tuple(row) for row in df.itertuples(index=False, name=None)]
+
+        # Execute the INSERT statement with the data
+        curs.executemany(insert_statement, data)
+
 
         # Insert data row by row to isolate errors
         for i, row in enumerate(df.itertuples(index=False, name=None)):
