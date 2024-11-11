@@ -128,6 +128,10 @@ def parse(csvFile, conn, stage_name):
         # Convert NaN values to None
         df = df.where(pd.notnull(df), None)
 
+        # Ensure `OutsOnPlay` is treated as varchar
+        if 'OutsOnPlay' in df.columns:
+            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str)
+
         print(f'Read {len(df)} records from {csvFile}')
         
         curs = conn.cursor()
