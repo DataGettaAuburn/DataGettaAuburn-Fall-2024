@@ -151,43 +151,11 @@ def parse(csvFile, conn, stage_name):
         # Prepare data for insertion
         data = [tuple(row) for row in df.itertuples(index=False, name=None)]
 
-<<<<<<< Updated upstream
         # Execute the INSERT statement with the data
         curs.executemany(insert_statement, data)
 
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
-=======
-    # Check for values that exceed PostgreSQL INTEGER range
-    large_values = []
-    for column in df.select_dtypes(include=['int64', 'float64']).columns:
-        if df[column].dropna().abs().max() > int_limit:
-            large_values.append((column, df[column].dropna().abs().max()))
-    
-    # Print any columns with out-of-range values
-    if large_values:
-        print("Warning: Columns with values that exceed PostgreSQL's INTEGER range:")
-        for col, max_val in large_values:
-            print(f"Column '{col}' has a max value of {max_val}")
-
-    # Prepare data for insertion
-    curs = conn.cursor()
-    columns = ", ".join(df.columns)
-    insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
-
-    # Insert data row by row and catch errors
-    for row in df.itertuples(index=False, name=None):
-        try:
-            curs.execute(insert_statement, row)
-        except Exception as e:
-            print(f"Error with row {row}: {e}")
-            continue  # Skip the problematic row and continue
-        
-    # Commit if all rows inserted successfully
-    conn.commit()
-    print(f"Data inserted into staging table '{stage_name}' successfully\n")
-
->>>>>>> Stashed changes
         ### Print data in stage table *Debugging ###
         #print("\n##### Table Info ######\n")
         
