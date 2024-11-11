@@ -126,9 +126,9 @@ def parse(csvFile, conn, stage_name):
         df = pd.read_csv(csvFile, na_values=[''])
         df = df.where(pd.notnull(df), None)
 
-        # Ensure specific columns are treated as varchar
-        if 'OutsOnPlay' in df.columns:
-            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str)
+    if 'OutsOnPlay' in df.columns:
+        # Convert to integer if possible, or handle non-numeric cases gracefully
+        df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
 
         print(f'Read {len(df)} records from {csvFile}')
         
