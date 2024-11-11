@@ -147,62 +147,62 @@ def parse(csvFile, conn, stage_name):
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
         ### Print data in stage table *Debugging ###
-        print("\n##### Table Info ######\n")
+        #print("\n##### Table Info ######\n")
         
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
-        columns_info = curs.fetchall()
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
+        #columns_info = curs.fetchall()
 
-        print("### stage_name Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        #print("### stage_name Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
 
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_pitcher'")
-        columns_info = curs.fetchall()
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_pitcher'")
+        #columns_info = curs.fetchall()
 
-        print("### Pitcher Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        #print("### Pitcher Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
 
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_batter'")
-        columns_info = curs.fetchall()
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_batter'")
+        #columns_info = curs.fetchall()
 
-        print("### Batter Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        #print("### Batter Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
 
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_catcher'")
-        columns_info = curs.fetchall()
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_catcher'")
+        #columns_info = curs.fetchall()
 
-        print("### Catcher Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        #print("### Catcher Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
 
-        print("\n##### Data ######\n")
-        print('Staging table:')
-        curs.execute(f"SELECT * FROM {stage_name}")
-        print(curs.fetchall())
+        #print("\n##### Data ######\n")
+        #print('Staging table:')
+        #curs.execute(f"SELECT * FROM {stage_name}")
+        #print(curs.fetchall())
 
-        print('Pitcher table:')
-        curs.execute(f"SELECT * FROM trackman_pitcher")
-        print(curs.fetchall())
+        #print('Pitcher table:')
+        #curs.execute(f"SELECT * FROM trackman_pitcher")
+        #print(curs.fetchall())
 
-        print('Staging table:')
-        curs.execute(f"SELECT * FROM trackman_batter")
-        print(curs.fetchall())
+        #print('Staging table:')
+        #curs.execute(f"SELECT * FROM trackman_batter")
+        #print(curs.fetchall())
 
-        print('Staging table:')
-        curs.execute(f"SELECT * FROM trackman_catcher")
-        print(curs.fetchall())
+        #print('Staging table:')
+        #curs.execute(f"SELECT * FROM trackman_catcher")
+        #print(curs.fetchall())
 
-        print("\n#### end of table info #####\n")
+        #print("\n#### end of table info #####\n")
 
     except FileNotFoundError:
         print(f"Error: File '{csvFile}' not found.")
@@ -230,21 +230,29 @@ def fix_headers(csvFile, changes):
 
     # Fix naming schemes
     try:
+# Check and capitalize the 'Pitcher' column
         if 'Pitcher' in df.columns:
-            df['Pitcher'] = df['Pitcher'].apply(lambda x: ''.join(word.capitalize() for word in x.split(', ')))
-
+            df['Pitcher'] = df['Pitcher'].apply(
+                lambda x: ''.join(word.capitalize() for word in x.split(', ')) if isinstance(x, str) else x
+            )
     except Exception as e:
         print(f"An error occurred while fixing 'Pitcher' column: {e}")
 
     try:
+        # Check and capitalize the 'Batter' column
         if 'Batter' in df.columns:
-            df['Batter'] = df['Batter'].apply(lambda x: ''.join(word.capitalize() for word in x.split(', ')))
+            df['Batter'] = df['Batter'].apply(
+                lambda x: ''.join(word.capitalize() for word in x.split(', ')) if isinstance(x, str) else x
+            )
     except Exception as e:
         print(f"An error occurred while fixing 'Batter' column: {e}")
 
     try:
+        # Check and capitalize the 'Catcher' column
         if 'Catcher' in df.columns:
-            df['Catcher'] = df['Catcher'].apply(lambda x: ''.join(word.capitalize() for word in x.split(', ')))
+            df['Catcher'] = df['Catcher'].apply(
+                lambda x: ''.join(word.capitalize() for word in x.split(', ')) if isinstance(x, str) else x
+            )
     except Exception as e:
         print(f"An error occurred while fixing 'Catcher' column: {e}")
 
