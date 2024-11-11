@@ -122,59 +122,43 @@ def staging(conn, stage_name):
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-        # Read CSV, handle empty cells
+        # Read CSV, handle empty cells, and set NaN values to None
         df = pd.read_csv(csvFile, na_values=[''])
-
-        # Convert NaN values to None
         df = df.where(pd.notnull(df), None)
 
-        # Ensure `OutsOnPlay` is treated as varchar
+        # Ensure specific columns are treated as varchar
         if 'OutsOnPlay' in df.columns:
             df['OutsOnPlay'] = df['OutsOnPlay'].astype(str)
 
         print(f'Read {len(df)} records from {csvFile}')
         
         curs = conn.cursor()
-
-        # Get column names from the CSV file
         columns = ", ".join(df.columns)
-
-        # Construct the parameterized INSERT INTO statement
         insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
 
         # Define PostgreSQL integer limit
         int_limit = 2147483647
-        # Prepare data for insertion
-        data = [tuple(row) for row in df.itertuples(index=False, name=None)]
 
-        # Execute the INSERT statement with the data
-        curs.executemany(insert_statement, data)
-
-        # Insert data row by row to isolate errors
         for i, row in enumerate(df.itertuples(index=False, name=None)):
             try:
-                # Check for out-of-range integer values in the row
-                out_of_range_columns = [
-                    (df.columns[j], value) for j, value in enumerate(row) 
-                    if isinstance(value, int) and abs(value) > int_limit
-                ]
-                
-                # If any out-of-range values found, log and skip this row
-                if out_of_range_columns:
-                    print(f"Warning: Row {i} has out-of-range integer values: {out_of_range_columns}")
-                    continue  # Skip this row
+                # Convert each row to tuple and check for out-of-range integers
+                processed_row = []
+                for col_idx, value in enumerate(row):
+                    if isinstance(value, int) and abs(value) > int_limit:
+                        print(f"Warning: Row {i} - Column '{df.columns[col_idx]}' out of range: {value}")
+                        processed_row.append(None)  # Use None or a default if out of range
+                    else:
+                        processed_row.append(value)
 
-                # Attempt to insert the row into the staging table
-                curs.execute(insert_statement, row)
+                # Insert the processed row
+                curs.execute(insert_statement, tuple(processed_row))
 
             except Exception as e:
-                # Log the error and problematic row, then rollback
                 print(f"Error with row {i}: {row} - {e}")
-                conn.rollback()  # Rollback to avoid transaction lock
-                continue  # Skip to next row after error
+                conn.rollback()  # Rollback the transaction to avoid locking
+                continue  # Skip to the next row after an error
 
-        # Commit if no errors
-        conn.commit()
+        conn.commit()  # Commit once at the end if no critical errors
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
         ### Print data in stage table *Debugging ###
