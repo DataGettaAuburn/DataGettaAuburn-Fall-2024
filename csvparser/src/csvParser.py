@@ -103,8 +103,12 @@ def staging(conn, stage_name):
         with open(yaml_.get('JSON_MAP'), 'r') as f:
             schema = json.load(f)
             columns = schema.get("columns", [])  # Get the list of columns
+
+            # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
+            columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
+
             # Construct SQL for each column without modification
-            columns_sql = [f"{column['name']} {column['type']}" for column in columns]
+            #columns_sql = [f"{column['name']} {column['type']}" for column in columns]
 
         # Create the staging table with column names exactly as in the JSON file
         curs.execute(f"CREATE TABLE {stage_name} ({', '.join(columns_sql)});")
@@ -127,7 +131,8 @@ def parse(csvFile, conn, stage_name):
         df = df.where(pd.notnull(df), None)
 
         if 'OutsOnPlay' in df.columns:
-            # Convert to integer if possible, or handle non-numeric cases gracefully
+            # Convert to string, clean, and then convert to numeric
+            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str).replace(r'\D', '', regex=True)
             df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
 
         print(f'Read {len(df)} records from {csvFile}')
