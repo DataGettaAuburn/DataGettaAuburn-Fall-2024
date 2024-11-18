@@ -104,9 +104,17 @@ def staging(conn, stage_name):
             schema = json.load(f)
             columns = schema.get("columns", [])  # Get the list of columns
 
-            # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
-            columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
+            # Construct SQL column definitions based on conditions
+            columns_sql = [
+                f"{column['name']} TEXT" if column['name'] == "GameID" else
+                f"{column['name']} UUID" if column['name'] == "PitchUID" else
+                f"{column['name']} BIGINT" if column['name'] == "BatterID" else
+                f"{column['name']} {column['type']}"
+                for column in columns
+            ]
 
+            # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
+            #columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
             # Construct SQL for each column without modification
             #columns_sql = [f"{column['name']} {column['type']}" for column in columns]
 
@@ -130,10 +138,31 @@ def parse(csvFile, conn, stage_name):
         df = pd.read_csv(csvFile, na_values=[''])
         df = df.where(pd.notnull(df), None)
 
+        # Handle specific columns
         if 'OutsOnPlay' in df.columns:
-            # Convert to string, clean, and then convert to numeric
+            # Clean and convert to numeric
             df['OutsOnPlay'] = df['OutsOnPlay'].astype(str).replace(r'\D', '', regex=True)
             df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
+
+        if 'PitchUID' in df.columns:
+            # Ensure UUID format
+            df['PitchUID'] = df['PitchUID'].apply(
+                lambda x: str(x) if pd.notnull(x) and isinstance(x, str) else None
+            )
+
+        if 'BatterID' in df.columns:
+            # Ensure BatterID fits in BIGINT or replace with None
+            df['BatterID'] = pd.to_numeric(df['BatterID'], errors='coerce')
+            df['BatterID'] = df['BatterID'].apply(
+                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
+            )
+
+        if 'PitcherID' in df.columns:
+            # Ensure PitcherID fits in BIGINT or replace with None
+            df['PitcherID'] = pd.to_numeric(df['PitcherID'], errors='coerce')
+            df['PitcherID'] = df['PitcherID'].apply(
+                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
+            )
 
         print(f'Read {len(df)} records from {csvFile}')
         
