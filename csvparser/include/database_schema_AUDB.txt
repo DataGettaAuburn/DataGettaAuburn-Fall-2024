@@ -214,8 +214,8 @@ Table practice_trackman_metadata {
   KorBB varchar
   TaggedHitType varchar
   PlayResult varchar
-  OutsOnPlay int
-  RunsScored int
+  OutsOnPlay varchar
+  RunsScored varchar
   RunnersAt varchar
   HomeTeam varchar
   AwayTeam varchar
