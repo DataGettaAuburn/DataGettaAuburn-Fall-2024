@@ -275,7 +275,7 @@ def fix_headers(csvFile, changes):
         return
 
     # Read the CSV file into a DataFrame
-    print("Original columns:", df.columns)
+    df = pd.read_csv(csvFile)
 
     # Apply changes to the header
     for old_header, new_header in changes.items():
@@ -438,7 +438,7 @@ def distribute_practice_data(conn, stage_name):
         print('Inserting into practice_trackman_metadata...')
         insert_metadata = f"""
         INSERT INTO public.practice_trackman_metadata
-                     ("PitchUID", "GameDate", "PitchTime", "Inning", "TopBottom", "Outs", "Balls", "Strikes", "PitchCall", "KorBB", "TaggedHitType", "PlayResult", "OutsOnPlay", "RunsScored", "RunnersAt", "HomeTeam", "AwayTeam", "Stadium", "Level", "League", "GameID", "GameUID", "UTCDate", "UTCtime", "LocalDateTime", "UTCDateTime", "AutoHitType", "System", "HomeTeamForeignID", "AwayTeamForeignID", "GameForeignID", "PlayID")
+                    ("PitchUID", "GameDate", "PitchTime", "Inning", "TopBottom", "Outs", "Balls", "Strikes", "PitchCall", "KorBB", "TaggedHitType", "PlayResult", "OutsOnPlay", "RunsScored", "RunnersAt", "HomeTeam", "AwayTeam", "Stadium", "Level", "League", "GameID", "GameUID", "UTCDate", "UTCtime", "LocalDateTime", "UTCDateTime", "AutoHitType", "System", "HomeTeamForeignID", "AwayTeamForeignID", "GameForeignID", "PlayID")
         SELECT "pitchuid", "gamedate", "pitchtime", "inning", "topbottom", "outs", "balls", "strikes", "pitchcall", "korbb", "taggedhittype", "playresult", "outsonplay", "runsscored", "runnersat", "hometeam", "awayteam", "stadium", "level", "league", "gameid", "gameuid", "utcdate", "utctime", "localdatetime", "utcdatetime", "autohittype", "system", "hometeamforeignid", "awayteamforeignid", "gameforeignid", "playid"
         FROM {stage_name}
         ON CONFLICT DO NOTHING;
@@ -462,8 +462,8 @@ def distribute_practice_data(conn, stage_name):
         print('Inserting into practice_batting_data...')
         insert_batting = f"""
         INSERT INTO public.practice_batting_data
-                    ("PitchUID", "PitchNo", "PAofInning", "PitchofPA", "Pitcher", "PitcherID", "PitcherThrows", "PitcherTeam", "PitcherSet", "TaggedPitchType", "AutoPitchType", "RelSpeed", "VertRelAngle", "HorzRelAngle", "SpinRate", "SpinAxis", "Tilt", "RelHeight", "RelSide", "Extension", "VertBreak", "InducedVert", "HorzBreak", "PlateLocHeight", "PlateLocSide", "ZoneSpeed", "VertApprAngle", "HorzApprAngle", "ZoneTime", pfxx, pfxz, x0, y0, z0, vx0, vy0, vz0, ax0, ay0, az0, "SpeedDrop", "PitchLastMeasuredX", "PitchLastMeasuredY", "PitchLastMeasuredZ", "PitchTrajectoryXc0", "PitchTrajectoryXc1", "PitchTrajectoryXc2", "PitchTrajectoryYc0", "PitchTrajectoryYc1", "PitchTrajectoryYc2", "PitchTrajectoryZc0", "PitchTrajectoryZc1", "PitchTrajectoryZc2", "PitchReleaseConfidence", "PitchLocationConfidence", "PitchMovementConfidence")
-        SELECT "pitchuid", "pitchno", "paofinning", "pitchofpa", COALESCE("pitcher", 'PitchDummy'), "pitcherid", "pitcherthrows", "pitcherteam", "pitcherset", "taggedpitchtype", "autopitchtype", "relspeed", "vertrelangle", "horzrelangle", "spinrate", "spinaxis", "tilt", "relheight", "relside", "extension", "vertbreak", "inducedvert", "horzbreak", "platelocheight", "platelocside", "zonespeed", "vertapprangle", "horzapprangle", "zonetime", pfxx, pfxz, x0, y0, z0, vx0, vy0, vz0, ax0, ay0, az0, "speeddrop", "pitchlastmeasuredx", "pitchlastmeasuredy", "pitchlastmeasuredz", "pitchtrajectoryxc0", "pitchtrajectoryxc1", "pitchtrajectoryxc2", "pitchtrajectoryyc0", "pitchtrajectoryyc1", "pitchtrajectoryyc2", "pitchtrajectoryzc0", "pitchtrajectoryzc1", "pitchtrajectoryzc2", "pitchreleaseconfidence", "pitchlocationconfidence", "pitchmovementconfidence"
+                    ("PitchUID", "Batter", "BatterID", "BatterSide", "BatterTeam", "ExitSpeed", "Angle", "Direction", "HitSpinRate", "PositionAt110X", "PositionAt110Y", "PositionAt110Z", "Distance", "LastTracked", "Bearing", "HangTime", "EffectiveVelo", "MaxHeight", "MeasuredDuration", "ContactPositionX", "ContactPositionY", "ContactPositionZ", "HitSpinAxis", "HitTrajectoryXc0", "HitTrajectoryXc1", "HitTrajectoryXc2", "HitTrajectoryXc3", "HitTrajectoryXc4", "HitTrajectoryXc5", "HitTrajectoryXc6", "HitTrajectoryXc7", "HitTrajectoryXc8", "HitTrajectoryYc0", "HitTrajectoryYc1", "HitTrajectoryYc2", "HitTrajectoryYc3", "HitTrajectoryYc4", "HitTrajectoryYc5", "HitTrajectoryYc6", "HitTrajectoryYc7", "HitTrajectoryYc8", "HitTrajectoryZc0", "HitTrajectoryZc1", "HitTrajectoryZc2", "HitTrajectoryZc3", "HitTrajectoryZc4", "HitTrajectoryZc5", "HitTrajectoryZc6", "HitTrajectoryZc7", "HitTrajectoryZc8", "HitLaunchConfidence", "HitLandingConfidence")
+        SELECT "pitchuid", COALESCE("batter", 'BatterDummy'), "batterid", "batterside", "batterteam", "exitspeed", "angle", "direction", "hitspinrate", "positionat110x", "positionat110y", "positionat110z", "distance", "lasttracked", "bearing", "hangtime", "effectivevelo", "maxheight", "measuredduration", "contactpositionx", "contactpositiony", "contactpositionz", "hitspinaxis", "hittrajectoryxc0", "hittrajectoryxc1", "hittrajectoryxc2", "hittrajectoryxc3", "hittrajectoryxc4", "hittrajectoryxc5", "hittrajectoryxc6", "hittrajectoryxc7", "hittrajectoryxc8", "hittrajectoryyc0", "hittrajectoryyc1", "hittrajectoryyc2", "hittrajectoryyc3", "hittrajectoryyc4", "hittrajectoryyc5", "hittrajectoryyc6", "hittrajectoryyc7", "hittrajectoryyc8", "hittrajectoryzc0", "hittrajectoryzc1", "hittrajectoryzc2", "hittrajectoryzc3", "hittrajectoryzc4", "hittrajectoryzc5", "hittrajectoryzc6", "hittrajectoryzc7", "hittrajectoryzc8", "hitlaunchconfidence", "hitlandingconfidence"
         FROM {stage_name}
         ON CONFLICT DO NOTHING;
         """
