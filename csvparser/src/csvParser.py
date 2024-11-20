@@ -459,7 +459,7 @@ def distribute_practice_data(conn, stage_name):
         time.sleep(0.1)
 
         # Insert batting data into practice_batting_data
-        print('Inserting into practice_batting_data...')
+        print('Inserting Practice Batting Data...')
         insert_batting = f"""
         INSERT INTO public.practice_batting_data
                     ("PitchUID", "Batter", "BatterID", "BatterSide", "BatterTeam", "ExitSpeed", "Angle", "Direction", "HitSpinRate", "PositionAt110X", "PositionAt110Y", "PositionAt110Z", "Distance", "LastTracked", "Bearing", "HangTime", "EffectiveVelo", "MaxHeight", "MeasuredDuration", "ContactPositionX", "ContactPositionY", "ContactPositionZ", "HitSpinAxis", "HitTrajectoryXc0", "HitTrajectoryXc1", "HitTrajectoryXc2", "HitTrajectoryXc3", "HitTrajectoryXc4", "HitTrajectoryXc5", "HitTrajectoryXc6", "HitTrajectoryXc7", "HitTrajectoryXc8", "HitTrajectoryYc0", "HitTrajectoryYc1", "HitTrajectoryYc2", "HitTrajectoryYc3", "HitTrajectoryYc4", "HitTrajectoryYc5", "HitTrajectoryYc6", "HitTrajectoryYc7", "HitTrajectoryYc8", "HitTrajectoryZc0", "HitTrajectoryZc1", "HitTrajectoryZc2", "HitTrajectoryZc3", "HitTrajectoryZc4", "HitTrajectoryZc5", "HitTrajectoryZc6", "HitTrajectoryZc7", "HitTrajectoryZc8", "HitLaunchConfidence", "HitLandingConfidence")
@@ -469,7 +469,7 @@ def distribute_practice_data(conn, stage_name):
         """
         curs.execute(insert_batting)
         time.sleep(0.1)
-
+        print("Data distributed successfully\n")
         # Set upload error flag to False if no errors occurred
         uploadErr_ = False
 
