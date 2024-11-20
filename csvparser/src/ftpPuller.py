@@ -75,7 +75,7 @@ def count_csv_files(directory):
             count_csv_files(directory + '/' + item)
         else:
             # If it's a CSV file and '_playerpositioning' is not in the name, increment totalFiles_
-            if item.endswith('.csv') and '_playerpositioning' not in item:
+            if item.endswith('.csv') and '_playerpositioning' not in item and item.startswith('2024'):
                 totalFiles_ += 1
                 print(f'\rCalculating files... {next(spinner)}', end='', flush=True)
 # end of count_csv_files()
@@ -168,7 +168,7 @@ def pull_all(directory, local_dir):
             pull_all(directory + '/' + item, os.path.join(local_dir, item))
         else:
             # If it's a CSV file and '_playerpositioning' is not in the name, download it
-            if item.endswith('.csv') and '_playerpositioning' not in item:
+            if item.endswith('.csv') and '_playerpositioning' not in item and item.startswith('2024'):
                 download_and_parse(directory, item)
                 print(f'{directory}{item} \t {currFileNum_}/{totalFiles_}...')
 # end of pull_all()
