@@ -137,6 +137,8 @@ def parse(csvFile, conn, stage_name):
           # Read CSV, handle empty cells, and set NaN values to None
         df = pd.read_csv(csvFile, na_values=[''])
         df = df.where(pd.notnull(df), None)
+        
+        print("CSV columns before renaming:", df.columns)
 
         # Handle specific columns
         if 'OutsOnPlay' in df.columns:
@@ -274,6 +276,7 @@ def fix_headers(csvFile, changes):
 
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csvFile)
+    print("Original columns:", df.columns)
 
     # Apply changes to the header
     for old_header, new_header in changes.items():
@@ -310,6 +313,7 @@ def fix_headers(csvFile, changes):
 
     # Write the modified DataFrame back to the input file
     df.to_csv(csvFile, index=False)
+    print("Renamed columns:", df.columns)
 # end of fix_headers()
 
 # Method that calls sql to move the data from the staging table -> sql tables
@@ -515,7 +519,7 @@ def runParser(csvFile):
                 'Notes': 'RunnersAt',
                 'InducedVertBreak': 'InducedVert',
                 'LastTrackedDistance': 'LastTracked'}
-    
+
     fix_headers(csvFile, changes)
 
     time.sleep(0.5)
