@@ -26,5 +26,5 @@ export default function Page (
 
     const baseURL = '/the-eye/player/'
     
-    permanentRedirect(baseURL.concat(decodedTeamName + '/' + decodedPlayerName + '/' + 'stats' + '/' + startOfSeason + '/' + currentDate))
+    permanentRedirect(baseURL.concat(decodedTeamName + '/' + decodedPlayerName + '/' + 'stats_practice' + '/' + startOfSeason + '/' + currentDate))
 }
