@@ -70,7 +70,7 @@ export default function ModelTabs ({team, player}: {team: string, player: string
 
             {/* Practice Tab */}
             <Link
-                href = {currentURL.concat(team + '/' + player).concat('/practice')}
+                href = {currentURL.concat(team + '/' + player).concat('/stats_practice')}
                 name = 'Practice Stats'
                 fontWeight = {600}
                 underline = {practiceUnderline}
