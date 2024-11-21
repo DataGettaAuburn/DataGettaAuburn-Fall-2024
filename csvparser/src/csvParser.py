@@ -134,70 +134,28 @@ def staging(conn, stage_name):
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-          # Read CSV, handle empty cells, and set NaN values to None
+        # Read CSV, handle empty cells
         df = pd.read_csv(csvFile, na_values=[''])
+
+        # Convert NaN values to None
         df = df.where(pd.notnull(df), None)
-        
-        print("CSV columns before renaming:", df.columns)
-
-        # Handle specific columns
-        if 'OutsOnPlay' in df.columns:
-            # Clean and convert to numeric
-            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str).replace(r'\D', '', regex=True)
-            df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
-
-        if 'PitchUID' in df.columns:
-            # Ensure UUID format
-            df['PitchUID'] = df['PitchUID'].apply(
-                lambda x: str(x) if pd.notnull(x) and isinstance(x, str) else None
-            )
-
-        if 'BatterID' in df.columns:
-            # Ensure BatterID fits in BIGINT or replace with None
-            df['BatterID'] = pd.to_numeric(df['BatterID'], errors='coerce')
-            df['BatterID'] = df['BatterID'].apply(
-                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
-            )
-
-        if 'PitcherID' in df.columns:
-            # Ensure PitcherID fits in BIGINT or replace with None
-            df['PitcherID'] = pd.to_numeric(df['PitcherID'], errors='coerce')
-            df['PitcherID'] = df['PitcherID'].apply(
-                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
-            )
 
         print(f'Read {len(df)} records from {csvFile}')
-        
+
         curs = conn.cursor()
+
+        # Get column names from the CSV file
         columns = ", ".join(df.columns)
+
+        # Construct the parameterized INSERT INTO statement
         insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
 
-        # Define PostgreSQL integer limit
-        int_limit = 2147483647
+        # Prepare data for insertion
+        data = [tuple(row) for row in df.itertuples(index=False, name=None)]
 
+        # Execute the INSERT statement with the data
+        curs.executemany(insert_statement, data)
 
-        # Insert data row by row to isolate errors
-        for i, row in enumerate(df.itertuples(index=False, name=None)):
-            try:
-                # Convert each row to tuple and check for out-of-range integers
-                processed_row = []
-                for col_idx, value in enumerate(row):
-                    if isinstance(value, int) and abs(value) > int_limit:
-                        print(f"Warning: Row {i} - Column '{df.columns[col_idx]}' out of range: {value}")
-                        processed_row.append(None)  # Use None or a default if out of range
-                    else:
-                        processed_row.append(value)
-
-                # Insert the processed row
-                curs.execute(insert_statement, tuple(processed_row))
-                
-
-            except Exception as e:
-                print(f"Error with row {i}: {row} - {e}")
-                conn.rollback()  # Rollback the transaction to avoid locking
-                continue  # Skip to the next row after an error
-
-        conn.commit()  # Commit once at the end if no critical errors
         print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
         
