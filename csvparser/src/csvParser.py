@@ -190,7 +190,7 @@ def parse(csvFile, conn, stage_name):
 
                 # Insert the processed row
                 curs.execute(insert_statement, tuple(processed_row))
-                print(f"Data inserted into staging table '{stage_name}' successfully\n")
+                
 
             except Exception as e:
                 print(f"Error with row {i}: {row} - {e}")
@@ -198,7 +198,7 @@ def parse(csvFile, conn, stage_name):
                 continue  # Skip to the next row after an error
 
         conn.commit()  # Commit once at the end if no critical errors
-        
+        print(f"Data inserted into staging table '{stage_name}' successfully\n")
 
         
         ### Print data in stage table *Debugging ###
