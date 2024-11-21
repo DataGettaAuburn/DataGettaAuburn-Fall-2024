@@ -134,11 +134,35 @@ def staging(conn, stage_name):
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-        # Read CSV, handle empty cells
+          # Read CSV, handle empty cells, and set NaN values to None
         df = pd.read_csv(csvFile, na_values=[''])
-
-        # Convert NaN values to None
         df = df.where(pd.notnull(df), None)
+
+        # Handle specific columns
+        if 'OutsOnPlay' in df.columns:
+            # Clean and convert to numeric
+            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str).replace(r'\D', '', regex=True)
+            df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
+
+        if 'PitchUID' in df.columns:
+            # Ensure UUID format
+            df['PitchUID'] = df['PitchUID'].apply(
+                lambda x: str(x) if pd.notnull(x) and isinstance(x, str) else None
+            )
+
+        if 'BatterID' in df.columns:
+            # Ensure BatterID fits in BIGINT or replace with None
+            df['BatterID'] = pd.to_numeric(df['BatterID'], errors='coerce')
+            df['BatterID'] = df['BatterID'].apply(
+                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
+            )
+
+        if 'PitcherID' in df.columns:
+            # Ensure PitcherID fits in BIGINT or replace with None
+            df['PitcherID'] = pd.to_numeric(df['PitcherID'], errors='coerce')
+            df['PitcherID'] = df['PitcherID'].apply(
+                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
+            )
 
         print(f'Read {len(df)} records from {csvFile}')
 
@@ -188,6 +212,38 @@ def parse(csvFile, conn, stage_name):
             column_name, column_type = column_info
             print(f"{column_name}: {column_type}")
         print("")
+
+
+        
+        ### Print data in stage table *Debugging ###
+        #print("\n##### Table Info ######\n")
+        
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
+        #columns_info = curs.fetchall()
+
+        #print("### stage_name Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
+
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_pitcher'")
+        #columns_info = curs.fetchall()
+
+        #print("### Pitcher Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
+
+        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_batter'")
+        #columns_info = curs.fetchall()
+
+        #print("### Batter Names and Types ###")
+        #for column_info in columns_info:
+        #    column_name, column_type = column_info
+        #    print(f"{column_name}: {column_type}")
+        #print("")
 
         #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_catcher'")
         #columns_info = curs.fetchall()
