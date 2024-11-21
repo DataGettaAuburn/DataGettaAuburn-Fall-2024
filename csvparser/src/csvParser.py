@@ -435,6 +435,40 @@ def distribute_practice_data(conn, stage_name):
     try:
         curs = conn.cursor()
 
+        print('Teams...')
+        insert_team = f"""
+        INSERT INTO public.teams
+                    ("TeamName", "DisplayName", "Conference")
+        SELECT "pitcherteam", 'NotSet', 'NotSet'
+        FROM {stage_name}
+        ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_team)
+        time.sleep(0.1)
+        
+        print('PlayerData...')
+        print('\tPitcher')
+        insert_pitcher = f"""
+            INSERT INTO public.players
+                        ("PlayerName", "TeamName")
+            SELECT COALESCE("pitcher", 'PitchDummy'), "pitcherteam"
+            FROM {stage_name}
+            ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_pitcher)
+        time.sleep(0.1)
+
+        print('\tBatter')
+        insert_batter = f"""
+            INSERT INTO public.players
+                        ("PlayerName", "TeamName")
+            SELECT COALESCE("batter", 'BatterDummy'), "batterteam"
+            FROM {stage_name}
+            ON CONFLICT DO NOTHING;
+        """
+        curs.execute(insert_batter)
+        time.sleep(0.1)
+
         # Insert metadata into practice_trackman_metadata
         print('Inserting into practice_trackman_metadata...')
         insert_metadata = f"""
