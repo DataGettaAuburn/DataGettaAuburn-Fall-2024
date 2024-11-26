@@ -163,6 +163,13 @@ def parse(csvFile, conn, stage_name):
             df['PitcherID'] = df['PitcherID'].apply(
                 lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
             )
+        if 'CatcherID' in df.columns:
+            # Ensure CatcherID fits in INT range or replace invalid values with None
+            df['CatcherID'] = pd.to_numeric(df['CatcherID'], errors='coerce')  # Coerce invalid to NaN
+            df['CatcherID'] = df['CatcherID'].apply(
+                lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None
+    )
+
 
         print(f'Read {len(df)} records from {csvFile}')
 
