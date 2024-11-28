@@ -139,6 +139,10 @@ def parse(csvFile, conn, stage_name):
         df = pd.read_csv(csvFile, na_values=[''])
         df = df.where(pd.notnull(df), None)
 
+        if 'CatcherID' in df.columns:
+            print("CatcherID column preview:")
+            print(df['CatcherID'].head(10).tolist())  # Print the first 10 rows for review
+
         # Handle specific columns
         if 'OutsOnPlay' in df.columns:
             # Clean and convert to numeric
@@ -165,12 +169,15 @@ def parse(csvFile, conn, stage_name):
                 lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
             )
         if 'CatcherID' in df.columns:
+            print("CatcherID column preview:")
+            print(df['CatcherID'].head(10).tolist())  # Print the first 10 rows for review
+            max_val = df['CatcherID'].max()
+            min_val = df['CatcherID'].min()
+            print(f"Max CatcherID: {max_val}, Min CatcherID: {min_val}"
             # Ensure CatcherID fits in INT range or replace invalid values with None
             df['CatcherID'] = pd.to_numeric(df['CatcherID'], errors='coerce')  # Coerce invalid to NaN
             df['CatcherID'] = df['CatcherID'].apply(
-                lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None
-    )
-
+                lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None)
 
         print(f'Read {len(df)} records from {csvFile}')
 
