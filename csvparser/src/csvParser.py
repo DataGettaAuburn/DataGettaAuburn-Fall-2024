@@ -173,11 +173,10 @@ def parse(csvFile, conn, stage_name):
             print(df['CatcherID'].head(10).tolist())  # Print the first 10 rows for review
             max_val = df['CatcherID'].max()
             min_val = df['CatcherID'].min()
-            print(f"Max CatcherID: {max_val}, Min CatcherID: {min_val}"
+            print(f"Max CatcherID: {max_val}, Min CatcherID: {min_val}")
             # Ensure CatcherID fits in INT range or replace invalid values with None
             df['CatcherID'] = pd.to_numeric(df['CatcherID'], errors='coerce')  # Coerce invalid to NaN
-            df['CatcherID'] = df['CatcherID'].apply(
-                lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None)
+            df['CatcherID'] = df['CatcherID'].apply(lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None)
 
         print(f'Read {len(df)} records from {csvFile}')
 
