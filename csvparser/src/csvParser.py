@@ -109,6 +109,7 @@ def staging(conn, stage_name):
                 f"{column['name']} TEXT" if column['name'] == "GameID" else
                 f"{column['name']} UUID" if column['name'] == "PitchUID" else
                 f"{column['name']} BIGINT" if column['name'] == "BatterID" else
+                f"{column['name']} BIGINT" if column['name'] == "CatcherID" else
                 f"{column['name']} {column['type']}"
                 for column in columns
             ]
