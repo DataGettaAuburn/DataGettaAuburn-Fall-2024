@@ -173,8 +173,6 @@ def parse(csvFile, conn, stage_name):
             print(f"General error during insertion: {e}")
 
         
-
-        
         ### Print data in stage table *Debugging ###
         # print("\n##### Table Info ######\n")
         
