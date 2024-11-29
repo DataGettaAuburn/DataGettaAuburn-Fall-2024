@@ -85,7 +85,7 @@ def connect_to_db():
 
 # Method for setting up the staging table 
 def staging(conn, stage_name):
-    print('Creating staging table...')
+    print('Creating staging tables...')
     try:
         # Create cursor
         curs = conn.cursor()
@@ -135,96 +135,75 @@ def staging(conn, stage_name):
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-          # Read CSV, handle empty cells, and set NaN values to None
-        df = pd.read_csv(csvFile, na_values=[''])
-        df = df.where(pd.notnull(df), None)
+        # Read CSV with NaN handling
+        df = pd.read_csv(csvFile, na_values=['', 'NULL', 'null'])
+        df = df.where(pd.notnull(df), None)  # Replace NaN with None
 
-        if 'CatcherID' in df.columns:
-            print("CatcherID column preview:")
-            print(df['CatcherID'].head(10).tolist())  # Print the first 10 rows for review
-            print("CatcherID column preview:")
-            print(df['CatcherID'].head(10).tolist())  # Print the first 10 rows for review
-            max_val = df['CatcherID'].max()
-            min_val = df['CatcherID'].min()
-            print(f"Max CatcherID: {max_val}, Min CatcherID: {min_val}")
-            # Ensure CatcherID fits in INT range or replace invalid values with None
-            df['CatcherID'] = pd.to_numeric(df['CatcherID'], errors='coerce')  # Coerce invalid to NaN
-            df['CatcherID'] = df['CatcherID'].apply(lambda x: x if pd.notnull(x) and -2147483648 <= x <= 2147483647 else None)
+        # Handle column-specific logic
+        columns_to_clean = {
+            "CatcherID": (int, -2147483648, 2147483647),  # Integer range
+            "BatterID": (int, -9223372036854775808, 9223372036854775807),  # BIGINT range
+            "PitcherID": (int, -9223372036854775808, 9223372036854775807),  # BIGINT range
+            "RelSpeed": (float, None, None),  # Decimal column
+        }
 
-        # Handle specific columns
-        if 'OutsOnPlay' in df.columns:
-            # Clean and convert to numeric
-            df['OutsOnPlay'] = df['OutsOnPlay'].astype(str).replace(r'\D', '', regex=True)
-            df['OutsOnPlay'] = pd.to_numeric(df['OutsOnPlay'], errors='coerce').fillna(0).astype(int)
+        for column, (col_type, min_val, max_val) in columns_to_clean.items():
+            if column in df.columns:
+                df[column] = pd.to_numeric(df[column], errors='coerce')  # Convert to numeric
+                if min_val is not None and max_val is not None:
+                    df[column] = df[column].apply(
+                        lambda x: x if pd.notnull(x) and min_val <= x <= max_val else None
+                    )
 
-        if 'PitchUID' in df.columns:
-            # Ensure UUID format
-            df['PitchUID'] = df['PitchUID'].apply(
-                lambda x: str(x) if pd.notnull(x) and isinstance(x, str) else None
-            )
-
-        if 'BatterID' in df.columns:
-            # Ensure BatterID fits in BIGINT or replace with None
-            df['BatterID'] = pd.to_numeric(df['BatterID'], errors='coerce')
-            df['BatterID'] = df['BatterID'].apply(
-                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
-            )
-
-        if 'PitcherID' in df.columns:
-            # Ensure PitcherID fits in BIGINT or replace with None
-            df['PitcherID'] = pd.to_numeric(df['PitcherID'], errors='coerce')
-            df['PitcherID'] = df['PitcherID'].apply(
-                lambda x: x if pd.notnull(x) and x <= 9223372036854775807 else None
-            )
-
-        print(f'Read {len(df)} records from {csvFile}')
-
+        # Generate SQL INSERT statement
         curs = conn.cursor()
-
-        # Get column names from the CSV file
         columns = ", ".join(df.columns)
-
-        # Construct the parameterized INSERT INTO statement
-        insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
+        values_placeholder = ", ".join(["%s"] * len(df.columns))
+        insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({values_placeholder})"
 
         # Prepare data for insertion
         data = [tuple(row) for row in df.itertuples(index=False, name=None)]
+        try:
+            curs.executemany(insert_statement, data)
+            conn.commit()
+            print(f"Data inserted into staging table '{stage_name}' successfully\n")
+        except psycopg2.DataError as e:
+            print(f"Data error during insertion: {e}")
+        except Exception as e:
+            print(f"General error during insertion: {e}")
 
-        # Execute the INSERT statement with the data
-        curs.executemany(insert_statement, data)
-
-        print(f"Data inserted into staging table '{stage_name}' successfully\n")
+        
 
         
         ### Print data in stage table *Debugging ###
-        print("\n##### Table Info ######\n")
+        # print("\n##### Table Info ######\n")
         
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
-        columns_info = curs.fetchall()
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
+        # columns_info = curs.fetchall()
 
-        print("### stage_name Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        # print("### stage_name Names and Types ###")
+        # for column_info in columns_info:
+        #     column_name, column_type = column_info
+        #     print(f"{column_name}: {column_type}")
+        # print("")
 
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_pitching_data'")
-        columns_info = curs.fetchall()
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_pitching_data'")
+        # columns_info = curs.fetchall()
 
-        print("### Pitcher Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        # print("### Pitcher Names and Types ###")
+        # for column_info in columns_info:
+        #     column_name, column_type = column_info
+        #     print(f"{column_name}: {column_type}")
+        # print("")
 
-        curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_batting_data'")
-        columns_info = curs.fetchall()
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_batting_data'")
+        # columns_info = curs.fetchall()
 
-        print("### Batter Names and Types ###")
-        for column_info in columns_info:
-            column_name, column_type = column_info
-            print(f"{column_name}: {column_type}")
-        print("")
+        # print("### Batter Names and Types ###")
+        # for column_info in columns_info:
+        #     column_name, column_type = column_info
+        #     print(f"{column_name}: {column_type}")
+        # print("")
 
 
         
