@@ -209,12 +209,12 @@ as $$
                         and "PlateLocSide" < 0.86
                         and "PlateLocSide" > -0.86
                         ) as swings_in_zone,
-        COUNT(*) filter (where "PitchCall" = 'StrikeSwinging'  
-                        or "PitchCall" = 'FoulBallNotFieldable'
-                        and "PlateLocHeight" > 3.55
-                        and "PlateLocHeight" < 1.77
-                        and "PlateLocSide" > 0.86
-                        and "PlateLocSide" < -0.86
+        COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
+                        or "PitchCall" = 'FoulBallNotFieldable')
+                        and ("PlateLocHeight" > 3.55
+                        or "PlateLocHeight" < 1.77
+                        or "PlateLocSide" > 0.86
+                        or "PlateLocSide" < -0.86
                         ) as total_num_chases,
         COUNT(*) as pitches,
         COUNT(distinct "GameUID") as games,
@@ -238,14 +238,13 @@ as $$
                                 )::decimal / pss."total_in_zone_pitches"
         end as in_zone_whiff_percentage,
         case when pss."total_out_of_zone_pitches" = 0 then null
-            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
-                                or "PitchCall" = 'FoulBallNotFieldable'
-                                or "PitchCall" = 'InPlay')
-                                and ("PlateLocHeight" > 3.55
-                                    or "PlateLocHeight" < 1.77
-                                    or "PlateLocSide" > 0.86
-                                    or "PlateLocSide" < -0.86)
-                                )::decimal / pss."total_out_of_zone_pitches"
+            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
+                        or "PitchCall" = 'FoulBallNotFieldable')
+                        and ("PlateLocHeight" > 3.55
+                        or "PlateLocHeight" < 1.77
+                        or "PlateLocSide" > 0.86
+                        or "PlateLocSide" < -0.86
+                        ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
     from pitcher_stats_subquery_two pss, trackman_metadata tm, trackman_pitcher tp, trackman_batter tb
     where pss."Pitcher" = tp."Pitcher" and pss."PitcherTeam" = tp."PitcherTeam" and tm."PitchUID" = tp."PitchUID" and tm."PitchUID" = tb."PitchUID" and tm."UTCDate" >= start_date and tm."UTCDate" <= end_date and tp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
@@ -479,10 +478,10 @@ as $$
                         ) as swings_in_zone,
         COUNT(*) filter (where "PitchCall" = 'StrikeSwinging'  
                         or "PitchCall" = 'FoulBallNotFieldable'
-                        and "PlateLocHeight" > 3.55
-                        and "PlateLocHeight" < 1.77
-                        and "PlateLocSide" > 0.86
-                        and "PlateLocSide" < -0.86
+                        or "PlateLocHeight" > 3.55
+                        or "PlateLocHeight" < 1.77
+                        or "PlateLocSide" > 0.86
+                        or "PlateLocSide" < -0.86
                         ) as total_num_chases,
         COUNT(*) as pitches,
         COUNT(distinct "GameUID") as games,
@@ -506,14 +505,13 @@ as $$
                                 )::decimal / pss."total_in_zone_pitches"
         end as in_zone_whiff_percentage,
         case when pss."total_out_of_zone_pitches" = 0 then null
-            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
-                                or "PitchCall" = 'FoulBallNotFieldable'
-                                or "PitchCall" = 'InPlay')
-                                AND ("PlateLocHeight" > 3.55
-                                    or "PlateLocHeight" < 1.77
-                                    or "PlateLocSide" > 0.86
-                                    or "PlateLocSide" < -0.86
-                                    ))::decimal / pss."total_out_of_zone_pitches"
+            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
+                        or "PitchCall" = 'FoulBallNotFieldable')
+                        and ("PlateLocHeight" > 3.55
+                        or "PlateLocHeight" < 1.77
+                        or "PlateLocSide" > 0.86
+                        or "PlateLocSide" < -0.86
+                        ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
     from pitcher_stats_subquery_two pss, practice_trackman_metadata tm, practice_pitching_data tp, practice_batting_data tb
     where pss."Pitcher" = tp."Pitcher" and pss."PitcherTeam" = tp."PitcherTeam" and tm."PitchUID" = tp."PitchUID" and tm."PitchUID" = tb."PitchUID" and tm."UTCDate" >= start_date and tm."UTCDate" <= end_date and tp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
