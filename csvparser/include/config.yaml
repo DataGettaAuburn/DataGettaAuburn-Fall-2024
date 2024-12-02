@@ -11,6 +11,7 @@ SQL_PASSWORD : 'm269A178J92JUk47Jd28jTah2aH1'
 SQL_PORT : '5432'
 SCHEMA_TXT : '../include/database_schema_AUDB.txt'
 JSON_MAP : '../include/schema.json'
+JSON_PRACT_MAP: '../include/practice_schema.json'
 
 ### Trackman ###
 TRACKMAN_DIR : '/./v3/2024/'

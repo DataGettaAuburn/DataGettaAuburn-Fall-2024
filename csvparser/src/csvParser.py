@@ -98,26 +98,42 @@ def staging(conn, stage_name):
             # Table already exists, handle accordingly (drop or rename)
             curs.execute(f"DROP TABLE {stage_name}")
             print(f"Existing staging table '{stage_name}' dropped")
+        if stage_name == 'staging_table_practice':
+            # Get headers from csv file
+            with open(yaml_.get('JSON_PRACT_MAP'), 'r') as f:
+                schema = json.load(f)
+                columns = schema.get("columns", [])  # Get the list of columns
+                # Construct SQL column definitions based on conditions
+                columns_sql = [
+                    f"{column['name']} TEXT" if column['name'] == "GameID" else
+                    f"{column['name']} UUID" if column['name'] == "PitchUID" else
+                    f"{column['name']} BIGINT" if column['name'] == "BatterID" else
+                    f"{column['name']} {column['type']}"
+                    for column in columns
+                ]
 
-        # Get headers from csv file
-        with open(yaml_.get('JSON_MAP'), 'r') as f:
-            schema = json.load(f)
-            columns = schema.get("columns", [])  # Get the list of columns
+                # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
+                #columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
+                # Construct SQL for each column without modification
+                #columns_sql = [f"{column['name']} {column['type']}" for column in columns]
+        else:
+            with open(yaml_.get('JSON_MAP'), 'r') as f:
+                schema = json.load(f)
+                columns = schema.get("columns", [])  # Get the list of columns
+                # Construct SQL column definitions based on conditions
+                columns_sql = [
+                    f"{column['name']} TEXT" if column['name'] == "GameID" else
+                    f"{column['name']} UUID" if column['name'] == "PitchUID" else
+                    f"{column['name']} BIGINT" if column['name'] == "BatterID" else
+                    f"{column['name']} BIGINT" if column['name'] == "CatcherID" else
+                    f"{column['name']} {column['type']}"
+                    for column in columns
+                ]
 
-            # Construct SQL column definitions based on conditions
-            columns_sql = [
-                f"{column['name']} TEXT" if column['name'] == "GameID" else
-                f"{column['name']} UUID" if column['name'] == "PitchUID" else
-                f"{column['name']} BIGINT" if column['name'] == "BatterID" else
-                f"{column['name']} BIGINT" if column['name'] == "CatcherID" else
-                f"{column['name']} {column['type']}"
-                for column in columns
-            ]
-
-            # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
-            #columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
-            # Construct SQL for each column without modification
-            #columns_sql = [f"{column['name']} {column['type']}" for column in columns]
+                # Modify GameID/PitchUID column type to VARCHAR or TEXT if it's not numeric
+                #columns_sql = [f"{column['name']} TEXT" if column['name'] in ["GameID", "PitchUID"] else f"{column['name']} {column['type']}" for column in columns]
+                # Construct SQL for each column without modification
+                #columns_sql = [f"{column['name']} {column['type']}" for column in columns]
 
         # Create the staging table with column names exactly as in the JSON file
         curs.execute(f"CREATE TABLE {stage_name} ({', '.join(columns_sql)});")
@@ -131,48 +147,33 @@ def staging(conn, stage_name):
         return
 # end of staging()
 
-# Method that parses the .csv file
 def parse(csvFile, conn, stage_name):
     print('Parsing...')
     try:
-        # Read CSV with NaN handling
-        df = pd.read_csv(csvFile, na_values=['', 'NULL', 'null'])
-        df = df.where(pd.notnull(df), None)  # Replace NaN with None
+        # Read CSV, handle empty cells
+        df = pd.read_csv(csvFile, na_values=[''])
 
-        # Handle column-specific logic
-        columns_to_clean = {
-            "CatcherID": (int, -2147483648, 2147483647),  # Integer range
-            "BatterID": (int, -9223372036854775808, 9223372036854775807),  # BIGINT range
-            "PitcherID": (int, -9223372036854775808, 9223372036854775807),  # BIGINT range
-            "RelSpeed": (float, None, None),  # Decimal column
-        }
+        # Convert NaN values to None
+        df = df.where(pd.notnull(df), None)
 
-        for column, (col_type, min_val, max_val) in columns_to_clean.items():
-            if column in df.columns:
-                df[column] = pd.to_numeric(df[column], errors='coerce')  # Convert to numeric
-                if min_val is not None and max_val is not None:
-                    df[column] = df[column].apply(
-                        lambda x: x if pd.notnull(x) and min_val <= x <= max_val else None
-                    )
+        print(f'Read {len(df)} records from {csvFile}')
 
-        # Generate SQL INSERT statement
         curs = conn.cursor()
+
+        # Get column names from the CSV file
         columns = ", ".join(df.columns)
-        values_placeholder = ", ".join(["%s"] * len(df.columns))
-        insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({values_placeholder})"
+
+        # Construct the parameterized INSERT INTO statement
+        insert_statement = f"INSERT INTO {stage_name} ({columns}) VALUES ({', '.join(['%s']*len(df.columns))})"
 
         # Prepare data for insertion
         data = [tuple(row) for row in df.itertuples(index=False, name=None)]
-        try:
-            curs.executemany(insert_statement, data)
-            conn.commit()
-            print(f"Data inserted into staging table '{stage_name}' successfully\n")
-        except psycopg2.DataError as e:
-            print(f"Data error during insertion: {e}")
-        except Exception as e:
-            print(f"General error during insertion: {e}")
 
-        
+        # Execute the INSERT statement with the data
+        curs.executemany(insert_statement, data)
+
+        print(f"Data inserted into staging table '{stage_name}' successfully\n")
+
         ### Print data in stage table *Debugging ###
         # print("\n##### Table Info ######\n")
         
@@ -185,7 +186,7 @@ def parse(csvFile, conn, stage_name):
         #     print(f"{column_name}: {column_type}")
         # print("")
 
-        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_pitching_data'")
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_pitcher'")
         # columns_info = curs.fetchall()
 
         # print("### Pitcher Names and Types ###")
@@ -194,7 +195,7 @@ def parse(csvFile, conn, stage_name):
         #     print(f"{column_name}: {column_type}")
         # print("")
 
-        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'practice_batting_data'")
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_batter'")
         # columns_info = curs.fetchall()
 
         # print("### Batter Names and Types ###")
@@ -203,65 +204,33 @@ def parse(csvFile, conn, stage_name):
         #     print(f"{column_name}: {column_type}")
         # print("")
 
+        # curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_catcher'")
+        # columns_info = curs.fetchall()
 
-        
-        ### Print data in stage table *Debugging ###
-        #print("\n##### Table Info ######\n")
-        
-        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = '{stage_name}'")
-        #columns_info = curs.fetchall()
+        # print("### Catcher Names and Types ###")
+        # for column_info in columns_info:
+        #     column_name, column_type = column_info
+        #     print(f"{column_name}: {column_type}")
+        # print("")
 
-        #print("### stage_name Names and Types ###")
-        #for column_info in columns_info:
-        #    column_name, column_type = column_info
-        #    print(f"{column_name}: {column_type}")
-        #print("")
+        # print("\n##### Data ######\n")
+        # print('Staging table:')
+        # curs.execute(f"SELECT * FROM {stage_name}")
+        # print(curs.fetchall())
 
-        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_pitcher'")
-        #columns_info = curs.fetchall()
+        # print('Pitcher table:')
+        # curs.execute(f"SELECT * FROM trackman_pitcher")
+        # print(curs.fetchall())
 
-        #print("### Pitcher Names and Types ###")
-        #for column_info in columns_info:
-        #    column_name, column_type = column_info
-        #    print(f"{column_name}: {column_type}")
-        #print("")
+        # print('Staging table:')
+        # curs.execute(f"SELECT * FROM trackman_batter")
+        # print(curs.fetchall())
 
-        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_batter'")
-        #columns_info = curs.fetchall()
+        # print('Staging table:')
+        # curs.execute(f"SELECT * FROM trackman_catcher")
+        # print(curs.fetchall())
 
-        #print("### Batter Names and Types ###")
-        #for column_info in columns_info:
-        #    column_name, column_type = column_info
-        #    print(f"{column_name}: {column_type}")
-        #print("")
-
-        #curs.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM information_schema.columns WHERE table_name = 'trackman_catcher'")
-        #columns_info = curs.fetchall()
-
-        #print("### Catcher Names and Types ###")
-        #for column_info in columns_info:
-        #    column_name, column_type = column_info
-        #    print(f"{column_name}: {column_type}")
-        #print("")
-
-        #print("\n##### Data ######\n")
-        #print('Staging table:')
-        #curs.execute(f"SELECT * FROM {stage_name}")
-        #print(curs.fetchall())
-
-        #print('Pitcher table:')
-        #curs.execute(f"SELECT * FROM trackman_pitcher")
-        #print(curs.fetchall())
-
-        #print('Staging table:')
-        #curs.execute(f"SELECT * FROM trackman_batter")
-        #print(curs.fetchall())
-
-        #print('Staging table:')
-        #curs.execute(f"SELECT * FROM trackman_catcher")
-        #print(curs.fetchall())
-
-        #print("\n#### end of table info #####\n")
+        # print("\n#### end of table info #####\n")
 
     except FileNotFoundError:
         print(f"Error: File '{csvFile}' not found.")
@@ -486,9 +455,9 @@ def distribute_practice_data(conn, stage_name):
         time.sleep(0.1)
 
         # Insert pitching data into practice_pitching_data
-        print('Inserting into practice_pitching_data...')
+        print('Inserting into practice_trackman_pitcher...')
         insert_pitching = f"""
-        INSERT INTO public.practice_pitching_data
+        INSERT INTO public.practice_trackman_pitcher
                     ("PitchUID", "PitchNo", "PAofInning", "PitchofPA", "Pitcher", "PitcherID", "PitcherThrows", "PitcherTeam", "PitcherSet", "TaggedPitchType", "AutoPitchType", "RelSpeed", "VertRelAngle", "HorzRelAngle", "SpinRate", "SpinAxis", "Tilt", "RelHeight", "RelSide", "Extension", "VertBreak", "InducedVert", "HorzBreak", "PlateLocHeight", "PlateLocSide", "ZoneSpeed", "VertApprAngle", "HorzApprAngle", "ZoneTime", pfxx, pfxz, x0, y0, z0, vx0, vy0, vz0, ax0, ay0, az0, "SpeedDrop", "PitchLastMeasuredX", "PitchLastMeasuredY", "PitchLastMeasuredZ", "PitchTrajectoryXc0", "PitchTrajectoryXc1", "PitchTrajectoryXc2", "PitchTrajectoryYc0", "PitchTrajectoryYc1", "PitchTrajectoryYc2", "PitchTrajectoryZc0", "PitchTrajectoryZc1", "PitchTrajectoryZc2", "PitchReleaseConfidence", "PitchLocationConfidence", "PitchMovementConfidence")
         SELECT "pitchuid", "pitchno", "paofinning", "pitchofpa", COALESCE("pitcher", 'PitchDummy'), "pitcherid", "pitcherthrows", "pitcherteam", "pitcherset", "taggedpitchtype", "autopitchtype", "relspeed", "vertrelangle", "horzrelangle", "spinrate", "spinaxis", "tilt", "relheight", "relside", "extension", "vertbreak", "inducedvert", "horzbreak", "platelocheight", "platelocside", "zonespeed", "vertapprangle", "horzapprangle", "zonetime", pfxx, pfxz, x0, y0, z0, vx0, vy0, vz0, ax0, ay0, az0, "speeddrop", "pitchlastmeasuredx", "pitchlastmeasuredy", "pitchlastmeasuredz", "pitchtrajectoryxc0", "pitchtrajectoryxc1", "pitchtrajectoryxc2", "pitchtrajectoryyc0", "pitchtrajectoryyc1", "pitchtrajectoryyc2", "pitchtrajectoryzc0", "pitchtrajectoryzc1", "pitchtrajectoryzc2", "pitchreleaseconfidence", "pitchlocationconfidence", "pitchmovementconfidence"
         FROM {stage_name}
@@ -498,9 +467,9 @@ def distribute_practice_data(conn, stage_name):
         time.sleep(0.1)
 
         # Insert batting data into practice_batting_data
-        print('Inserting Practice Batting Data...')
+        print('Inserting Practice Trackman Batter...')
         insert_batting = f"""
-        INSERT INTO public.practice_batting_data
+        INSERT INTO public.practice_trackman_batter
                     ("PitchUID", "Batter", "BatterID", "BatterSide", "BatterTeam", "ExitSpeed", "Angle", "Direction", "HitSpinRate", "PositionAt110X", "PositionAt110Y", "PositionAt110Z", "Distance", "LastTracked", "Bearing", "HangTime", "EffectiveVelo", "MaxHeight", "MeasuredDuration", "ContactPositionX", "ContactPositionY", "ContactPositionZ", "HitSpinAxis", "HitTrajectoryXc0", "HitTrajectoryXc1", "HitTrajectoryXc2", "HitTrajectoryXc3", "HitTrajectoryXc4", "HitTrajectoryXc5", "HitTrajectoryXc6", "HitTrajectoryXc7", "HitTrajectoryXc8", "HitTrajectoryYc0", "HitTrajectoryYc1", "HitTrajectoryYc2", "HitTrajectoryYc3", "HitTrajectoryYc4", "HitTrajectoryYc5", "HitTrajectoryYc6", "HitTrajectoryYc7", "HitTrajectoryYc8", "HitTrajectoryZc0", "HitTrajectoryZc1", "HitTrajectoryZc2", "HitTrajectoryZc3", "HitTrajectoryZc4", "HitTrajectoryZc5", "HitTrajectoryZc6", "HitTrajectoryZc7", "HitTrajectoryZc8", "HitLaunchConfidence", "HitLandingConfidence")
         SELECT "pitchuid", COALESCE("batter", 'BatterDummy'), "batterid", "batterside", "batterteam", "exitspeed", "angle", "direction", "hitspinrate", "positionat110x", "positionat110y", "positionat110z", "distance", "lasttracked", "bearing", "hangtime", "effectivevelo", "maxheight", "measuredduration", "contactpositionx", "contactpositiony", "contactpositionz", "hitspinaxis", "hittrajectoryxc0", "hittrajectoryxc1", "hittrajectoryxc2", "hittrajectoryxc3", "hittrajectoryxc4", "hittrajectoryxc5", "hittrajectoryxc6", "hittrajectoryxc7", "hittrajectoryxc8", "hittrajectoryyc0", "hittrajectoryyc1", "hittrajectoryyc2", "hittrajectoryyc3", "hittrajectoryyc4", "hittrajectoryyc5", "hittrajectoryyc6", "hittrajectoryyc7", "hittrajectoryyc8", "hittrajectoryzc0", "hittrajectoryzc1", "hittrajectoryzc2", "hittrajectoryzc3", "hittrajectoryzc4", "hittrajectoryzc5", "hittrajectoryzc6", "hittrajectoryzc7", "hittrajectoryzc8", "hitlaunchconfidence", "hitlandingconfidence"
         FROM {stage_name}
@@ -547,9 +516,12 @@ def runParser(csvFile):
     conn = connect_to_db()
     if conn is None:
         return
-    
+
     #define staging name
-    stage_name = 'staging_table'
+    if target_tables == "practice":
+        'staging_table_practice'
+    elif target_tables == "game_data": 
+        stage_name = 'staging_table'
 
     staging(conn, stage_name)
 

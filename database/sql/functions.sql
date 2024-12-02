@@ -209,13 +209,14 @@ as $$
                         and "PlateLocSide" < 0.86
                         and "PlateLocSide" > -0.86
                         ) as swings_in_zone,
-        COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
-                        or "PitchCall" = 'FoulBallNotFieldable')
+        COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
+                            or "PitchCall" = 'FoulBallNotFieldable'
+                            or "PitchCall" = 'InPlay')
                         and ("PlateLocHeight" > 3.55
                         or "PlateLocHeight" < 1.77
                         or "PlateLocSide" > 0.86
                         or "PlateLocSide" < -0.86
-                        ) as total_num_chases,
+                        )) as total_num_chases,
         COUNT(*) as pitches,
         COUNT(distinct "GameUID") as games,
         COUNT(*) filter (where "Inning" = 1
@@ -238,13 +239,14 @@ as $$
                                 )::decimal / pss."total_in_zone_pitches"
         end as in_zone_whiff_percentage,
         case when pss."total_out_of_zone_pitches" = 0 then null
-            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
-                        or "PitchCall" = 'FoulBallNotFieldable')
-                        and ("PlateLocHeight" > 3.55
-                        or "PlateLocHeight" < 1.77
-                        or "PlateLocSide" > 0.86
-                        or "PlateLocSide" < -0.86
-                        ))::decimal / pss."total_out_of_zone_pitches"
+            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
+                                or "PitchCall" = 'FoulBallNotFieldable'
+                                or "PitchCall" = 'InPlay')
+                                and ("PlateLocHeight" > 3.55
+                                    or "PlateLocHeight" < 1.77
+                                    or "PlateLocSide" > 0.86
+                                    or "PlateLocSide" < -0.86
+                                ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
     from pitcher_stats_subquery_two pss, trackman_metadata tm, trackman_pitcher tp, trackman_batter tb
     where pss."Pitcher" = tp."Pitcher" and pss."PitcherTeam" = tp."PitcherTeam" and tm."PitchUID" = tp."PitchUID" and tm."PitchUID" = tb."PitchUID" and tm."UTCDate" >= start_date and tm."UTCDate" <= end_date and tp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
@@ -431,14 +433,16 @@ $$ language plpgsql;
 
 -- This function calculates the pitcher stats for a given time period.
 -- The function takes in the pitcher name, pitcher team, start date, and end date as arguments.
-drop function if exists get_pitcher_stats_prc;
+-- This function calculates the pitcher stats for a given time period.
+-- The function takes in the pitcher name, pitcher team, start date, and end date as arguments.
+drop function if exists get_pitcher_stats;
 create or replace function get_pitcher_stats_prc(pitcher_name text, pitcher_team text, start_date date, end_date date)
 returns table("Pitcher" varchar, "PitcherTeam" varchar, "total_strikeouts_pitcher" bigint, "total_walks_pitcher" bigint, "total_out_of_zone_pitches" bigint, "misses_in_zone" bigint, "swings_in_zone" bigint, "total_num_chases" bigint, "pitches" bigint, "games" bigint, "games_started" bigint, "total_innings_pitched" decimal, "total_batters_faced" bigint, "in_zone_whiff_percentage" decimal, "chase_percentage" decimal, "k_percentage" decimal, "base_on_ball_percentage" decimal)
 as $$
     begin
     return query
-    with pitcher_stats_subquery as (
-    with pitcher_stats_subquery_two as (
+    with pitcher_stats_prc_subquery as (
+    with pitcher_stats_prc_subquery_two as (
         select tp."Pitcher" as "Pitcher", tp."PitcherTeam" as "PitcherTeam",
         COUNT(*) filter (where "PlateLocHeight" > 3.55
                                 or "PlateLocHeight" < 1.77
@@ -450,11 +454,11 @@ as $$
                                 and "PlateLocSide" < 0.86
                                 and "PlateLocSide" > -0.86
                                 ) as total_in_zone_pitches
-        from practice_batting_data tb, practice_trackman_metadata tm, practice_pitching_data tp
-        where tb."PitchUID" = tm."PitchUID" and tm."PitchUID" = tp."PitchUID" and tm."UTCDate" >= start_date and tm."UTCDate" <= end_date and tp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
-        group by (tp."Pitcher", tp."PitcherTeam")
+        from practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
+        where tb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
+        group by (ptp."Pitcher", ptp."PitcherTeam")
     )
-    select tp."Pitcher" as "Pitcher", tp."PitcherTeam" as "PitcherTeam",
+    select ptp."Pitcher" as "Pitcher", ptp."PitcherTeam" as "PitcherTeam",
         COUNT(*) filter (where "KorBB" = 'Strikeout') as total_strikeouts_pitcher,
         COUNT(*) filter (where "KorBB" = 'Walk') as total_walks_pitcher,
         COUNT(*) filter (where "PlateLocHeight" > 3.55
@@ -476,13 +480,14 @@ as $$
                         and "PlateLocSide" < 0.86
                         and "PlateLocSide" > -0.86
                         ) as swings_in_zone,
-        COUNT(*) filter (where "PitchCall" = 'StrikeSwinging'  
-                        or "PitchCall" = 'FoulBallNotFieldable'
-                        or "PlateLocHeight" > 3.55
+        COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
+                            or "PitchCall" = 'FoulBallNotFieldable'
+                            or "PitchCall" = 'InPlay')
+                        and ("PlateLocHeight" > 3.55
                         or "PlateLocHeight" < 1.77
                         or "PlateLocSide" > 0.86
                         or "PlateLocSide" < -0.86
-                        ) as total_num_chases,
+                        )) as total_num_chases,
         COUNT(*) as pitches,
         COUNT(distinct "GameUID") as games,
         COUNT(*) filter (where "Inning" = 1
@@ -505,29 +510,30 @@ as $$
                                 )::decimal / pss."total_in_zone_pitches"
         end as in_zone_whiff_percentage,
         case when pss."total_out_of_zone_pitches" = 0 then null
-            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'  
-                        or "PitchCall" = 'FoulBallNotFieldable')
-                        and ("PlateLocHeight" > 3.55
-                        or "PlateLocHeight" < 1.77
-                        or "PlateLocSide" > 0.86
-                        or "PlateLocSide" < -0.86
-                        ))::decimal / pss."total_out_of_zone_pitches"
+            else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
+                                or "PitchCall" = 'FoulBallNotFieldable'
+                                or "PitchCall" = 'InPlay')
+                                and ("PlateLocHeight" > 3.55
+                                    or "PlateLocHeight" < 1.77
+                                    or "PlateLocSide" > 0.86
+                                    or "PlateLocSide" < -0.86
+                                ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
-    from pitcher_stats_subquery_two pss, practice_trackman_metadata tm, practice_pitching_data tp, practice_batting_data tb
-    where pss."Pitcher" = tp."Pitcher" and pss."PitcherTeam" = tp."PitcherTeam" and tm."PitchUID" = tp."PitchUID" and tm."PitchUID" = tb."PitchUID" and tm."UTCDate" >= start_date and tm."UTCDate" <= end_date and tp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
-    group by (tp."Pitcher", tp."PitcherTeam", pss."total_out_of_zone_pitches", pss."total_in_zone_pitches")
+    from pitcher_stats__prc_subquery_two psps, practice_trackman_metadata ptm, practice_trackman_pitcher ptp, practice_trackman_batter ptb
+    where pss."Pitcher" = tp."Pitcher" and psps."PitcherTeam" = tp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
+    group by (ptp."Pitcher", ptp."PitcherTeam", psps."total_out_of_zone_pitches", psps."total_in_zone_pitches")
 )
 select 
     *,
     case
-        when ps."total_batters_faced" = 0 then null
-        else ps."total_strikeouts_pitcher"::decimal / ps."total_batters_faced"
+        when pps."total_batters_faced" = 0 then null
+        else pps."total_strikeouts_pitcher"::decimal / ps."total_batters_faced"
     end as k_percentage,
     case
-        when ps."total_batters_faced" = 0 then null
-        else ps."total_walks_pitcher"::decimal / ps."total_batters_faced"
+        when pps."total_batters_faced" = 0 then null
+        else pps."total_walks_pitcher"::decimal / ps."total_batters_faced"
     end as base_on_ball_percentage
-from pitcher_stats_subquery ps;
+from pitcher_stats__prc_subquery pps;
     end;
 $$ language plpgsql;
 
