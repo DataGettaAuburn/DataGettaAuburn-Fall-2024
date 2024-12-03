@@ -404,7 +404,7 @@ begin
                                     )::decimal / hs."total_in_zone_pitches"
             end as in_zone_whiff_percentage,
             COUNT(distinct "GameUID") as games
-        from  hits_subquery hs, practice_batting_data ptb, practice_trackman_metadata ptm, practice_pitching_data ptp
+        from  hits_subquery hs, practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
         where hs."Batter" = ptb."Batter" and hs."BatterTeam" = ptb."BatterTeam" and ptb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and tm."UTCDate" <= end_date and ptb."Batter" = batter_name and ptb."BatterTeam" = batter_team
         group by (ptb."Batter", tb."BatterTeam", hs."hits", hs."at_bats", hs."total_out_of_zone_pitches", hs."total_in_zone_pitches")
     )
