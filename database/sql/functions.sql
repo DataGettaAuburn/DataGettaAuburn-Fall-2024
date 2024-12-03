@@ -435,7 +435,7 @@ $$ language plpgsql;
 -- The function takes in the pitcher name, pitcher team, start date, and end date as arguments.
 -- This function calculates the pitcher stats for a given time period.
 -- The function takes in the pitcher name, pitcher team, start date, and end date as arguments.
-drop function if exists get_pitcher_stats;
+drop function if exists get_pitcher_stats_prc;
 create or replace function get_pitcher_stats_prc(pitcher_name text, pitcher_team text, start_date date, end_date date)
 returns table("Pitcher" varchar, "PitcherTeam" varchar, "total_strikeouts_pitcher" bigint, "total_walks_pitcher" bigint, "total_out_of_zone_pitches" bigint, "misses_in_zone" bigint, "swings_in_zone" bigint, "total_num_chases" bigint, "pitches" bigint, "games" bigint, "games_started" bigint, "total_innings_pitched" decimal, "total_batters_faced" bigint, "in_zone_whiff_percentage" decimal, "chase_percentage" decimal, "k_percentage" decimal, "base_on_ball_percentage" decimal)
 as $$
