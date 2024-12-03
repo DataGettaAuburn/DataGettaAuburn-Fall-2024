@@ -529,11 +529,11 @@ select
     *,
     case
         when pps."total_batters_faced" = 0 then null
-        else pps."total_strikeouts_pitcher"::decimal / ps."total_batters_faced"
+        else pps."total_strikeouts_pitcher"::decimal / pps."total_batters_faced"
     end as k_percentage,
     case
         when pps."total_batters_faced" = 0 then null
-        else pps."total_walks_pitcher"::decimal / ps."total_batters_faced"
+        else pps."total_walks_pitcher"::decimal / pps."total_batters_faced"
     end as base_on_ball_percentage
 from pitcher_stats_prc_subquery pps;
     end;
