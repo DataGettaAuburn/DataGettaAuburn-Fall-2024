@@ -519,7 +519,7 @@ def runParser(csvFile):
 
     #define staging name
     if target_tables == "practice":
-        'staging_table_practice'
+        stage_name = 'staging_table_practice'
     elif target_tables == "game_data": 
         stage_name = 'staging_table'
 
