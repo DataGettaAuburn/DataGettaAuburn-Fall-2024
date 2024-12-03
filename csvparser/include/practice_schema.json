@@ -213,6 +213,10 @@
             "type": "decimal" 
         },
         { 
+            "name": "InducedVert", 
+            "type": "decimal" 
+        },
+        { 
             "name": "InducedVertBreak", 
             "type": "decimal" 
         },
