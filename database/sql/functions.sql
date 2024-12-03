@@ -535,7 +535,7 @@ select
         when pps."total_batters_faced" = 0 then null
         else pps."total_walks_pitcher"::decimal / ps."total_batters_faced"
     end as base_on_ball_percentage
-from pitcher_stats__prc_subquery pps;
+from pitcher_stats_prc_subquery pps;
     end;
 $$ language plpgsql;
 
