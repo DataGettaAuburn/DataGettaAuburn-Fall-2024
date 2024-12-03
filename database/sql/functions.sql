@@ -405,7 +405,7 @@ begin
             end as in_zone_whiff_percentage,
             COUNT(distinct "GameUID") as games
         from  hits_subquery hs, practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
-        where hs."Batter" = ptb."Batter" and hs."BatterTeam" = ptb."BatterTeam" and ptb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and tm."UTCDate" <= end_date and ptb."Batter" = batter_name and ptb."BatterTeam" = batter_team
+        where hs."Batter" = ptb."Batter" and hs."BatterTeam" = ptb."BatterTeam" and ptb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptb."Batter" = batter_name and ptb."BatterTeam" = batter_team
         group by (ptb."Batter", tb."BatterTeam", hs."hits", hs."at_bats", hs."total_out_of_zone_pitches", hs."total_in_zone_pitches")
     )
     select 
@@ -443,7 +443,7 @@ as $$
     return query
     with pitcher_stats_prc_subquery as (
     with pitcher_stats_prc_subquery_two as (
-        select tp."Pitcher" as "Pitcher", tp."PitcherTeam" as "PitcherTeam",
+        select ptp."Pitcher" as "Pitcher", ptp."PitcherTeam" as "PitcherTeam",
         COUNT(*) filter (where "PlateLocHeight" > 3.55
                                 or "PlateLocHeight" < 1.77
                                 or "PlateLocSide" > 0.86
@@ -455,7 +455,7 @@ as $$
                                 and "PlateLocSide" > -0.86
                                 ) as total_in_zone_pitches
         from practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
-        where tb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and tp."PitcherTeam" = pitcher_team
+        where tb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
         group by (ptp."Pitcher", ptp."PitcherTeam")
     )
     select ptp."Pitcher" as "Pitcher", ptp."PitcherTeam" as "PitcherTeam",
@@ -520,7 +520,7 @@ as $$
                                 ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
     from pitcher_stats__prc_subquery_two psps, practice_trackman_metadata ptm, practice_trackman_pitcher ptp, practice_trackman_batter ptb
-    where pss."Pitcher" = tp."Pitcher" and psps."PitcherTeam" = tp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
+    where pss."Pitcher" = ptp."Pitcher" and psps."PitcherTeam" = ptp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
     group by (ptp."Pitcher", ptp."PitcherTeam", psps."total_out_of_zone_pitches", psps."total_in_zone_pitches")
 )
 select 
