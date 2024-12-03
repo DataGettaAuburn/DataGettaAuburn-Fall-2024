@@ -519,7 +519,7 @@ as $$
                                     or "PlateLocSide" < -0.86
                                 ))::decimal / pss."total_out_of_zone_pitches"
         end as chase_percentage
-    from pitcher_stats__prc_subquery_two psps, practice_trackman_metadata ptm, practice_trackman_pitcher ptp, practice_trackman_batter ptb
+    from pitcher_stats_prc_subquery_two psps, practice_trackman_metadata ptm, practice_trackman_pitcher ptp, practice_trackman_batter ptb
     where pss."Pitcher" = ptp."Pitcher" and psps."PitcherTeam" = ptp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
     group by (ptp."Pitcher", ptp."PitcherTeam", psps."total_out_of_zone_pitches", psps."total_in_zone_pitches")
 )
@@ -533,7 +533,7 @@ select
         when pps."total_batters_faced" = 0 then null
         else pps."total_walks_pitcher"::decimal / ps."total_batters_faced"
     end as base_on_ball_percentage
-from pitcher_stats__prc_subquery pps;
+from pitcher_stats_prc_subquery pps;
     end;
 $$ language plpgsql;
 
