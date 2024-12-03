@@ -281,13 +281,13 @@ begin
          COUNT(*) filter (where ptp."AutoPitchType" = 'Four-Seam') as fourseam_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Sinker') as sinker_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Slider') as slider_count,
-            COUNT(*) filter (where ptp."TaggedPitchType" = 'Fastball' and tp."AutoPitchType" != 'Four-Seam') as twoseam_count,
+            COUNT(*) filter (where ptp."TaggedPitchType" = 'Fastball' and ptp."AutoPitchType" != 'Four-Seam') as twoseam_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Changeup') as changeup_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Cutter') as cutter_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Splitter') as splitter_count,
             COUNT(*) filter (where ptp."AutoPitchType" = 'Other' or ptp."AutoPitchType" = 'NaN') as other_count
 from practice_trackman_metadata ptm, practice_trackman_pitcher ptp
-where tp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team and ptp."PitchUID" = ptm."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date
+where ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team and ptp."PitchUID" = ptm."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date
 group by (ptp."Pitcher", ptp."PitcherTeam");
 end;
 $$ language plpgsql;
@@ -406,7 +406,7 @@ begin
             COUNT(distinct "GameUID") as games
         from  hits_subquery hs, practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
         where hs."Batter" = ptb."Batter" and hs."BatterTeam" = ptb."BatterTeam" and ptb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptb."Batter" = batter_name and ptb."BatterTeam" = batter_team
-        group by (ptb."Batter", tb."BatterTeam", hs."hits", hs."at_bats", hs."total_out_of_zone_pitches", hs."total_in_zone_pitches")
+        group by (ptb."Batter", ptb."BatterTeam", hs."hits", hs."at_bats", hs."total_out_of_zone_pitches", hs."total_in_zone_pitches")
     )
     select 
             *,
@@ -455,7 +455,7 @@ as $$
                                 and "PlateLocSide" > -0.86
                                 ) as total_in_zone_pitches
         from practice_trackman_batter ptb, practice_trackman_metadata ptm, practice_trackman_pitcher ptp
-        where tb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
+        where ptb."PitchUID" = ptm."PitchUID" and ptm."PitchUID" = ptp."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
         group by (ptp."Pitcher", ptp."PitcherTeam")
     )
     select ptp."Pitcher" as "Pitcher", ptp."PitcherTeam" as "PitcherTeam",
