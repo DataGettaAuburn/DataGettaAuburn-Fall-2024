@@ -501,15 +501,16 @@ as $$
         (((COUNT(*) filter (where "KorBB" = 'StrikeOut') + 
         SUM("OutsOnPlay"::integer)) % 3)::decimal / 10), 1) as total_innings_pitched,
         COUNT(distinct ("PAofInning", "Inning", "Batter", "GameUID")) as total_batters_faced,
-        case when pss."total_in_zone_pitches" = 0 then null
+        case when psps."total_in_zone_pitches" = 0 then null
             else COUNT(*) filter (where "PitchCall" = 'StrikeSwinging'
                                 and "PlateLocHeight" < 3.55
                                 and "PlateLocHeight" > 1.77
                                 and "PlateLocSide" < 0.86
                                 and "PlateLocSide" > -0.86
-                                )::decimal / pss."total_in_zone_pitches"
+                                )::decimal / psps."total_in_zone_pitches"
         end as in_zone_whiff_percentage,
-        case when pss."total_out_of_zone_pitches" = 0 then null
+
+        case when psps."total_out_of_zone_pitches" = 0 then null
             else COUNT(*) filter (where ("PitchCall" = 'StrikeSwinging'
                                 or "PitchCall" = 'FoulBallNotFieldable'
                                 or "PitchCall" = 'InPlay')
@@ -517,10 +518,11 @@ as $$
                                     or "PlateLocHeight" < 1.77
                                     or "PlateLocSide" > 0.86
                                     or "PlateLocSide" < -0.86
-                                ))::decimal / pss."total_out_of_zone_pitches"
+                                ))::decimal / psps."total_out_of_zone_pitches"
         end as chase_percentage
+
     from pitcher_stats_prc_subquery_two psps, practice_trackman_metadata ptm, practice_trackman_pitcher ptp, practice_trackman_batter ptb
-    where pss."Pitcher" = ptp."Pitcher" and psps."PitcherTeam" = ptp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
+    where psps."Pitcher" = ptp."Pitcher" and psps."PitcherTeam" = ptp."PitcherTeam" and ptm."PitchUID" = ptp."PitchUID" and ptm."PitchUID" = ptb."PitchUID" and ptm."UTCDate" >= start_date and ptm."UTCDate" <= end_date and ptp."Pitcher" = pitcher_name and ptp."PitcherTeam" = pitcher_team
     group by (ptp."Pitcher", ptp."PitcherTeam", psps."total_out_of_zone_pitches", psps."total_in_zone_pitches")
 )
 select 
@@ -533,7 +535,7 @@ select
         when pps."total_batters_faced" = 0 then null
         else pps."total_walks_pitcher"::decimal / ps."total_batters_faced"
     end as base_on_ball_percentage
-from pitcher_stats_prc_subquery pps;
+from pitcher_stats__prc_subquery pps;
     end;
 $$ language plpgsql;
 
